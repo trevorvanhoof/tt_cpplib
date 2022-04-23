@@ -52,7 +52,8 @@ An additional high level concept include a Material, which holds one possible se
 #### tt_debugdraw_2d
 
 Draw lines, rectangles, triangle fans, and on-screen text.
-Shoutout to FiraCode: https://github.com/tonsky/FiraCode, a great font that I am not benefitting from here because I use a sprite font based on it.
+We use a spritefont and require https://github.com/nothings/stb/blob/master/stb_image.h to load it.
+Shoutout to FiraCode which is in the sprites: https://github.com/tonsky/FiraCode, a great font that I am not benefitting from here because of the spritefont.
 
 #### tt_debugdraw_3d
 
