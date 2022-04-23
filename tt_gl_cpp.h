@@ -11,3 +11,5 @@
 #include <Windows.h>
 #undef max
 #undef min
+#undef near
+#undef far
