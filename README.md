@@ -25,6 +25,8 @@ Subclass and implement the events. Note the CreateGLContext() utility function.
 
 ### OpenGL
 
+You'll need to download glext.h yourself, see the downlad_glext shortcut in the repo.
+
 #### tt_gl_h.h
 
 Include this in any header that needs knowledge of OpenGL.
