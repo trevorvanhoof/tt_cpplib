@@ -6,7 +6,7 @@ Example windows message loop implementation:
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
 	TT::Window window;
-	TT::window.Show();
+	window.Show();
 	MSG msg;
 	bool quit = false;
 	do {
