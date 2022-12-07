@@ -4,6 +4,11 @@
 #include "tt_debugdraw_2d.h"
 #include <immintrin.h>
 
+#ifdef USE_MMATH
+#include "Mat44.h"
+namespace TT {
+	typedef Mat44 CameraMatrix;
+#else
 namespace TT {
 	__declspec(align(16))
 		struct CameraMatrix {
@@ -37,6 +42,7 @@ namespace TT {
 					_mm_mul_ps(cols[3], _mm_castsi128_ps(_mm_shuffle_epi32(_mm_castps_si128(v), 0b11111111))))) };
 		}
 	};
+#endif
 
 	struct DebugDraw3D : public DebugDraw2D {
 		CameraMatrix VP;

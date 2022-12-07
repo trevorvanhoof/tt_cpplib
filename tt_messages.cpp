@@ -1,12 +1,13 @@
 #include "tt_messages.h"
 #include <Windows.h>
+#include <cstdio>
 
 namespace TT {
 	// Caller owns the return value
 	static char* _FormatStr(const char* fmt, va_list args)
 	{
 		size_t size;
-#pragma warning(suppress:28719)    // 28719
+		#pragma warning(suppress:28719)    // 28719
 		size = vsnprintf(nullptr, 0, fmt, args);
 
 		char* message = new char[size + 1u];
