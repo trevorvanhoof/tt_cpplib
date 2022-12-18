@@ -1,3 +1,4 @@
+// Access to GL in header files, also see tt_gl_cpp.h
 #pragma once
 
 #ifndef APIENTRY
@@ -10,7 +11,6 @@
 #endif
 #include <gl/gl.h>
 #include "glext.h"
-#include "tt_glext_win.h"
 #ifdef UNDEF_APIENTRY
 #undef UNDEF_APIENTRY
 #undef APIENTRY
@@ -19,3 +19,4 @@
 #undef UNDEF_WINGDIAPI
 #undef WINGDIAPI
 #endif
+#include "tt_glext_win_2.h"

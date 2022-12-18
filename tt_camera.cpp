@@ -96,6 +96,7 @@ namespace TT {
 
 	OrbitCameraWindowBase::OrbitCameraWindowBase() {
 		dc = CreateGLContext();
+		LoadGLFunctions();
 		// TODO: Make this optional
 		debugDraw = new TT::DebugDraw3D;
 	}

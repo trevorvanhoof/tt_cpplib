@@ -1,10 +1,8 @@
 #pragma once
 
-#include <cstdio>
+#include "tt_strings.h"
 
 namespace TT {
-	// Caller owns the return value
-	char* FormatStr(const char* fmt, ...);
 	void Info(const char* fmt, ...);
 	void Warning(const char* fmt, ...);
 	void Error(const char* fmt, ...);

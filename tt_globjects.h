@@ -84,6 +84,31 @@ namespace TT {
 		EChannelFormat channel_format;
 	};
 
+	struct RenderTarget : GLObject {
+		enum class Attachment {
+			Color0 = 0x8CE0,
+			Color1 = 0x8CE1,
+			Color2 = 0x8CE2,
+			Color3 = 0x8CE3,
+			Color4 = 0x8CE4,
+			Color5 = 0x8CE5,
+			Color6 = 0x8CE6,
+			Color7 = 0x8CE7,
+			Depth = 0x8D00,
+			Stencil = 0x8D20,
+			DepthStencil = 0x821A,
+		};
+		RenderTarget(RenderTarget&& other);
+		RenderTarget& operator=(RenderTarget&& other);
+		~RenderTarget();
+		RenderTarget();
+		void attach(const Image& image, Attachment attachment);
+		void bind() const;
+
+	private:
+		unsigned int handle;
+	};
+
 	struct Shader : GLObject {
 		Shader(Shader&& other);
 		Shader& operator=(Shader&& other);
@@ -110,11 +135,19 @@ namespace TT {
 		std::unordered_map<std::string, unsigned int> uniforms;
 	};
 
+	union UniformData {
+		float f[16];
+		int i[16];
+		unsigned int u[16];
+		const Image* image_address;
+	};
+
 	struct UniformValue : GLObject {
-		UniformValue(UniformValue&& other);
-		UniformValue& operator=(UniformValue&& other);
-		~UniformValue();
-		UniformValue();
+		UniformValue(const UniformValue& other);
+		UniformValue& operator=(const UniformValue& other);
+
+		UniformValue() = default;
+		~UniformValue() = default;
 		UniformValue(float value);
 		UniformValue(float x, float y);
 		UniformValue(float x, float y, float z);
@@ -128,7 +161,7 @@ namespace TT {
 		friend struct Material;
 		enum class Type { Invalid, Int, UInt, Float, Image, Mat44 } type = Type::Invalid;
 		int num_values = 0;
-		const void* data = nullptr;
+		UniformData data{};
 	};
 
 	struct Material {
@@ -160,6 +193,8 @@ namespace TT {
 	struct MeshAttribute {
 		int dimensions;
 		unsigned int elementType;
+
+		int SizeOf() const;
 	};
 
 	struct Mesh : GLObject {

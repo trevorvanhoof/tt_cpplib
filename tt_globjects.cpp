@@ -44,7 +44,7 @@ namespace TT {
 			case Image::EChannelFormat::F32:
 				switch (channels) {
 				case 1: return GL_R32F;
-				case 2: return GL_RGB32F;
+				case 2: AssertFatal(false, "RG32F is not supported on most GPUs."); return GL_RG32F;
 				case 3: return GL_RGB32F;
 				case 4: return GL_RGBA32F;
 				default: AssertFatal(false); return 0;
@@ -129,6 +129,32 @@ namespace TT {
 		this->height = height;
 		bind();
 		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+	}
+
+	RenderTarget::RenderTarget(RenderTarget&& other) {
+		handle = other.handle;
+		other.handle = 0;
+	}
+
+	RenderTarget& RenderTarget::operator=(RenderTarget&& other) {
+		handle = other.handle;
+		other.handle = 0;
+		return *this;
+	}
+
+	RenderTarget::~RenderTarget() { glDeleteFramebuffers(1, &handle); handle = 0; }
+
+	RenderTarget::RenderTarget() {
+		glGenFramebuffers(1, &handle);
+	}
+
+	void RenderTarget::bind() const {
+		glBindFramebuffer(GL_FRAMEBUFFER, handle);
+	}
+
+	void RenderTarget::attach(const Image& image, Attachment attachment) {
+		bind();
+		glFramebufferTexture2D(GL_FRAMEBUFFER, (GLenum)attachment, GL_TEXTURE_2D, image.raw_gl_handle(), 0);
 	}
 
 	Shader Shader::from_file(const char* file_path, unsigned int type) {
@@ -217,6 +243,16 @@ namespace TT {
 	UniformValue::UniformValue(unsigned int x, unsigned int y) { data = new unsigned int[] { x, y }; num_values = 2; type = Type::UInt; }
 	UniformValue::UniformValue(const Image* value) { data = value; num_values = 1; type = Type::Image; }
 	UniformValue::UniformValue(const Mat44& value) { data = new Mat44(value); num_values = 1; type = Type::Mat44; }
+	UniformValue::UniformValue(const UniformValue& other) { type = other.type; num_values = other.num_values; data = other.data; };
+	UniformValue& UniformValue::operator=(const UniformValue& other) { type = other.type; num_values = other.num_values; data = other.data; return *this; };
+	UniformValue::UniformValue(float value) { data.f[0] = value; num_values = 1; type = Type::Float; }
+	UniformValue::UniformValue(float x, float y) { data.f[0] = x; data.f[1] = y; num_values = 2; type = Type::Float; }
+	UniformValue::UniformValue(float x, float y, float z) { data.f[0] = x; data.f[1] = y; data.f[2] = z; num_values = 3; type = Type::Float; }
+	UniformValue::UniformValue(float x, float y, float z, float w) { data.f[0] = x; data.f[1] = y; data.f[2] = z; data.f[3] = w; num_values = 4; type = Type::Float; }
+	UniformValue::UniformValue(int value) { data.i[0] = value; num_values = 1; type = Type::Int; }
+	UniformValue::UniformValue(unsigned int x, unsigned int y) { data.u[0] = x; data.u[1] = y; num_values = 2; type = Type::UInt; }
+	UniformValue::UniformValue(const Image* value) { data.image_address = value; num_values = 1; type = Type::Image; }
+	UniformValue::UniformValue(const Mat44& value) { static_assert(sizeof(Mat44) == sizeof(float) * 16, ""); CopyMemory(data.f, &value, sizeof(float) * 16); num_values = 1; type = Type::Mat44; }
 
 	Material::Material(Program& program) : program(program) {}
 
@@ -239,13 +275,27 @@ namespace TT {
 			{
 				switch (pair.second.num_values) {
 				case 1:
-					glUniform1iv(pair.first, 1, (const int*)pair.second.data); break;
+					glUniform1iv(pair.first, 1, pair.second.data.i); break;
 				case 2:
-					glUniform2iv(pair.first, 1, (const int*)pair.second.data); break;
+					glUniform2iv(pair.first, 1, pair.second.data.i); break;
 				case 3:
-					glUniform3iv(pair.first, 1, (const int*)pair.second.data); break;
+					glUniform3iv(pair.first, 1, pair.second.data.i); break;
 				case 4:
-					glUniform4iv(pair.first, 1, (const int*)pair.second.data); break;
+					glUniform4iv(pair.first, 1, pair.second.data.i); break;
+				}
+				break;
+			}
+			case UniformValue::Type::UInt:
+			{
+				switch (pair.second.num_values) {
+				case 1:
+					glUniform1uiv(pair.first, 1, pair.second.data.u); break;
+				case 2:
+					glUniform2uiv(pair.first, 1, pair.second.data.u); break;
+				case 3:
+					glUniform3uiv(pair.first, 1, pair.second.data.u); break;
+				case 4:
+					glUniform4uiv(pair.first, 1, pair.second.data.u); break;
 				}
 				break;
 			}
@@ -267,27 +317,28 @@ namespace TT {
 			{
 				switch (pair.second.num_values) {
 				case 1:
-					glUniform1fv(pair.first, 1, (const float*)pair.second.data); break;
+					glUniform1fv(pair.first, 1, pair.second.data.f); break;
 				case 2:
-					glUniform2fv(pair.first, 1, (const float*)pair.second.data); break;
+					glUniform2fv(pair.first, 1, pair.second.data.f); break;
 				case 3:
-					glUniform3fv(pair.first, 1, (const float*)pair.second.data); break;
+					glUniform3fv(pair.first, 1, pair.second.data.f); break;
 				case 4:
-					glUniform4fv(pair.first, 1, (const float*)pair.second.data); break;
+					glUniform4fv(pair.first, 1, pair.second.data.f); break;
 				}
 				break;
 			}
 			case UniformValue::Type::Image:
 			{
 				glActiveTexture(GL_TEXTURE0 + texture_cursor);
-				((Image*)pair.second.data)->bind();
+				pair.second.data.image_address->bind();
 				glUniform1i(pair.first, texture_cursor);
 				texture_cursor += 1;
 				break;
 			}
 			case UniformValue::Type::Mat44:
 			{
-				glUniformMatrix4fv(pair.first, 1, false, (const float*)pair.second.data);
+				TT::Assert(pair.second.num_values == 1);
+				glUniformMatrix4fv(pair.first, 1, false, pair.second.data.f);
 				break;
 			}
 			}
@@ -307,17 +358,32 @@ namespace TT {
 		if(barrier_bits != 0) glMemoryBarrier(barrier_bits);
 	}
 
+	int MeshAttribute::SizeOf() const {
+		switch (elementType) {
+		case GL_FLOAT:
+			return sizeof(float) * dimensions;
+		default:
+			AssertFatal(false);
+			return 0;
+		}
+	}
+
 	__forceinline void Mesh::init(const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type) {
 		this->primitive_type = primitive_type;
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 		vbo.bind();
 		ibo.bind();
+		int stride = 0;
+		for (const TT::MeshAttribute& attr : attrs)
+			stride += attr.SizeOf();
 		int i = 0;
-		for (auto attr : attrs) {
+		size_t offset = 0;
+		for (const TT::MeshAttribute& attr : attrs) {
 			glEnableVertexAttribArray(i);
-			glVertexAttribPointer(i, attr.dimensions, attr.elementType, GL_FALSE, 0, nullptr);
+			glVertexAttribPointer(i, attr.dimensions, attr.elementType, GL_FALSE, stride, (void*)offset);
 			i += 1;
+			offset += attr.SizeOf();
 		}
 	}
 
