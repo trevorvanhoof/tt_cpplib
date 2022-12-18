@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <initializer_list>
+#include "Mat44.h"
 
 namespace TT {
 	/*
@@ -26,25 +27,61 @@ namespace TT {
 		GLObject& operator=(GLObject&&) = delete;
 	};
 
+	struct Buffer : GLObject {
+		Buffer(Buffer&& other);
+		Buffer& operator=(Buffer&& other);
+		~Buffer();
+		Buffer(unsigned int attachment, size_t num_bytes, const char* data = nullptr, unsigned int usage = 0x88E4 /*GL_STATIC_DRAW*/);
+		void bind() const;
+		void bind(unsigned int custom_attachment) const;
+		size_t get_size() const;
+		void set_data(size_t num_bytes, const void* data);
+
+		unsigned int raw_gl_handle() const;
+		void bind_to_layout_location(unsigned int index) const;
+		void bind_to_layout_location(unsigned int index, unsigned int custom_attachment) const;
+
+	private:
+		unsigned int attachment;
+		unsigned int handle;
+		size_t size;
+	};
+
 	struct Image : GLObject {
+		enum class EChannelFormat {
+			U8,
+			F32,
+		};
+		enum class ELoadStoreMode {
+			Read = 0x88B8, // GL_READ_ONLY
+			Write = 0x88B9, // GL_WRITE_ONLY
+			ReadWrite = 0x88BA, // GL_READ_WRITE
+		};
+
 		Image(Image&& other);
 		Image& operator=(Image&& other);
 		~Image();
 		Image(const char* file);
-		Image(int width, int height, int channels = 3, const char* data = nullptr);
+		Image(int width, int height, int channels = 3, const char* data = nullptr, EChannelFormat channel_format = EChannelFormat::U8);
 		void bind() const;
 
-		unsigned int raw_gl_handle();
-		int get_width();
-		int get_height();
-		int get_channels();
+		unsigned int raw_gl_handle() const;
+		void bind_to_layout_location(unsigned int index, ELoadStoreMode access = ELoadStoreMode::ReadWrite) const;
+
+		int get_width() const;
+		int get_height() const;
+		int get_channels() const;
+
+		// Data can be nullptr to just allocate
 		void set_data(const void* data);
+		void set_data(int width, int height, const void* data);
 
 	private:
 		unsigned int handle;
 		int width;
 		int height;
 		int channels;
+		EChannelFormat channel_format;
 	};
 
 	struct Shader : GLObject {
@@ -52,6 +89,8 @@ namespace TT {
 		Shader& operator=(Shader&& other);
 		~Shader();
 		Shader(const char* code, unsigned int type);
+
+		static Shader from_file(const char* file_path, unsigned int type);
 
 	private:
 		friend struct Program;
@@ -62,7 +101,7 @@ namespace TT {
 		Program(Program&& other);
 		Program& operator=(Program&& other);
 		~Program();
-		Program(std::initializer_list<Shader> shaders, int num_shaders);
+		Program(std::initializer_list<Shader> shaders);
 		void use() const;
 		unsigned int uniform(const char* name);
 
@@ -81,13 +120,15 @@ namespace TT {
 		UniformValue(float x, float y, float z);
 		UniformValue(float x, float y, float z, float w);
 		UniformValue(int value);
-		UniformValue(Image& value);
+		UniformValue(unsigned int x, unsigned int y);
+		UniformValue(const Image* value);
+		UniformValue(const Mat44& value);
 
 	private:
 		friend struct Material;
-		enum class Type { Invalid, Int, Float, Image } type = Type::Invalid;
+		enum class Type { Invalid, Int, UInt, Float, Image, Mat44 } type = Type::Invalid;
 		int num_values = 0;
-		void* data = nullptr;
+		const void* data = nullptr;
 	};
 
 	struct Material {
@@ -97,12 +138,23 @@ namespace TT {
 		void set(const char* name, float x, float y, float z);
 		void set(const char* name, float x, float y, float z, float w);
 		void set(const char* name, int value);
-		void set(const char* name, Image& value);
+		void set(const char* name, unsigned int x, unsigned int y);
+		void set(const char* name, const Image* value);
+		void set(const char* name, const Mat44& value);
 		void use() const;
-
 	private:
 		Program& program;
 		std::unordered_map<unsigned int, UniformValue> uniforms;
+	};
+
+	struct ComputeMaterial : public Material {
+	public:
+		ComputeMaterial(Program& program, int workgroup_size_x, int workgroup_size_y, int workgroup_size_z);
+		void use_and_dispatch(int work_units_x = 1, int work_units_y = 1, int work_units_z = 1, unsigned int barrier_bits = 0);
+	private:
+		int workgroup_size_x;
+		int workgroup_size_y;
+		int workgroup_size_z;
 	};
 
 	struct MeshAttribute {
@@ -114,14 +166,22 @@ namespace TT {
 		Mesh(Mesh&& other);
 		Mesh& operator=(Mesh&& other);
 		~Mesh();
-		Mesh(std::initializer_list<float> vertices, std::initializer_list<unsigned int> indices, std::initializer_list<MeshAttribute> attrs, unsigned int primitive_type);
-		Mesh(std::initializer_list<float> vertices, std::initializer_list<unsigned short> indices, std::initializer_list<MeshAttribute> attrs, unsigned int primitive_type);
-		Mesh(std::initializer_list<float> vertices, std::initializer_list<unsigned char> indices, std::initializer_list<MeshAttribute> attrs, unsigned int primitive_type);
+		Mesh(const std::initializer_list<float>& vertice, const std::initializer_list<unsigned int>& indices, const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type, unsigned int mode = 0x88E4 /*GL_STATIC_DRAW*/);
+		Mesh(const std::initializer_list<float>& vertices, const std::initializer_list<unsigned short>& indices, const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type, unsigned int mode = 0x88E4 /*GL_STATIC_DRAW*/);
+		Mesh(const std::initializer_list<float>& vertices, const std::initializer_list<unsigned char>& indices, const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type, unsigned int mode = 0x88E4 /*GL_STATIC_DRAW*/);
 		void draw() const;
 
+		const Buffer& get_vbo() const { return vbo; }
+		const Buffer& get_ibo() const  { return ibo; }
+
+		void resize_vbo(unsigned int num_floats);
+		void resize_ibo(unsigned int num_indices);
+
 	private:
-		__forceinline void init(std::initializer_list<float> vertices, std::initializer_list<MeshAttribute> attrs, unsigned int primitive_type);
+		__forceinline void init(const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type);
 		unsigned int vao;
+		Buffer vbo;
+		Buffer ibo;
 		unsigned int buffers[2];
 		unsigned int primitive_type;
 		unsigned int index_type;

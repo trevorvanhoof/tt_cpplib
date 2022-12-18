@@ -1,3 +1,4 @@
+// TODO: Pre-load these function pointers instead of using macros
 #define glDrawRangeElements ((PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements"))
 #define glTexImage3D ((PFNGLTEXIMAGE3DPROC)wglGetProcAddress("glTexImage3D"))
 #define glTexSubImage3D ((PFNGLTEXSUBIMAGE3DPROC)wglGetProcAddress("glTexSubImage3D"))

@@ -23,13 +23,13 @@ namespace TT {
 	"uniform int uChr;"
 	"void main(){"
 	"cd=uTint;if(uMode==1){vec4 T = texture(uImage,(vUv+vec2(uChr,0))/vec2(95,1)); if(T.xyz == vec3(19,19,20)/255) discard; cd*=T;};"
-	"};", GL_FRAGMENT_SHADER) }, 2),
+	"};", GL_FRAGMENT_SHADER) } ),
 		mtl(program),
 		quad({ 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f }, std::initializer_list<unsigned char>({ 0, 1, 2, 0, 2, 3 }), { {2, GL_FLOAT} }, GL_TRIANGLES),
 		line({ 0.0f, 0.0f, 1.0f, 0.0f }, std::initializer_list<unsigned char>({ 0, 1 }), { {2, GL_FLOAT} }, GL_LINES),
 		font("fira_code_spritefont.png")
 	{
-		mtl.set("uImage", font);
+		mtl.set("uImage", &font);
 		glGenBuffers(1, &polygonBuffer);
 	}
 
