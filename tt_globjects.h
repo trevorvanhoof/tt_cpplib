@@ -145,7 +145,8 @@ namespace TT {
 	struct UniformValue : GLObject {
 		UniformValue(const UniformValue& other);
 		UniformValue& operator=(const UniformValue& other);
-
+		UniformValue(UniformValue&& other);
+		UniformValue& operator=(UniformValue&& other);
 		UniformValue() = default;
 		~UniformValue() = default;
 		UniformValue(float value);

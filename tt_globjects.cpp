@@ -211,13 +211,14 @@ namespace TT {
 		return uniforms[name];
 	}
 
+	UniformValue::UniformValue(const UniformValue& other) { type = other.type; num_values = other.num_values; data = other.data; };
+	UniformValue& UniformValue::operator=(const UniformValue& other) { type = other.type; num_values = other.num_values; data = other.data; return *this; };
 	UniformValue::UniformValue(UniformValue&& other) {
 		type = other.type;
 		num_values = other.num_values;
 		data = other.data;
 		other.type = Type::Invalid;
 		other.num_values = 0;
-		other.data = nullptr;
 	}
 	UniformValue& UniformValue::operator=(UniformValue&& other) {
 		type = other.type;
@@ -225,26 +226,8 @@ namespace TT {
 		data = other.data;
 		other.type = Type::Invalid;
 		other.num_values = 0;
-		other.data = nullptr;
 		return *this;
 	}
-	UniformValue::~UniformValue() {
-		if (type != Type::Image) {
-			delete[] data;
-		}
-		data = nullptr;
-	};
-	UniformValue::UniformValue() {}
-	UniformValue::UniformValue(float value) { data = new float[] { value }; num_values = 1; type = Type::Float; }
-	UniformValue::UniformValue(float x, float y) { data = new float[] { x, y }; num_values = 2; type = Type::Float; }
-	UniformValue::UniformValue(float x, float y, float z) { data = new float[] { x, y, z }; num_values = 3; type = Type::Float; }
-	UniformValue::UniformValue(float x, float y, float z, float w) { data = new float[] { x, y, z, w }; num_values = 4; type = Type::Float; }
-	UniformValue::UniformValue(int value) { data = new int[] { value }; num_values = 1; type = Type::Int; }
-	UniformValue::UniformValue(unsigned int x, unsigned int y) { data = new unsigned int[] { x, y }; num_values = 2; type = Type::UInt; }
-	UniformValue::UniformValue(const Image* value) { data = value; num_values = 1; type = Type::Image; }
-	UniformValue::UniformValue(const Mat44& value) { data = new Mat44(value); num_values = 1; type = Type::Mat44; }
-	UniformValue::UniformValue(const UniformValue& other) { type = other.type; num_values = other.num_values; data = other.data; };
-	UniformValue& UniformValue::operator=(const UniformValue& other) { type = other.type; num_values = other.num_values; data = other.data; return *this; };
 	UniformValue::UniformValue(float value) { data.f[0] = value; num_values = 1; type = Type::Float; }
 	UniformValue::UniformValue(float x, float y) { data.f[0] = x; data.f[1] = y; num_values = 2; type = Type::Float; }
 	UniformValue::UniformValue(float x, float y, float z) { data.f[0] = x; data.f[1] = y; data.f[2] = z; num_values = 3; type = Type::Float; }
