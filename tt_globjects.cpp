@@ -7,6 +7,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include "Mat44.h"
+
 namespace TT {
 	Buffer::Buffer(Buffer&& other) { handle = other.handle; other.handle = 0; attachment = other.attachment; size = other.size; }
 	Buffer& Buffer::operator=(Buffer&& other) { handle = other.handle; other.handle = 0; attachment = other.attachment; size = other.size; return *this; }
@@ -97,9 +99,10 @@ namespace TT {
 	Image::Image(const char* file) {
 		glGenTextures(1, &handle);
 		bind();
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(glenum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		unsigned char* data = stbi_load(file, &width, &height, &channels, 0);
-		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+		channel_format = EChannelFormat::U8;
+		glTexImage2D(glenum, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
 		stbi_image_free(data);
 	}
 
@@ -107,11 +110,11 @@ namespace TT {
 		width(width), height(height), channels(channels), channel_format(channel_format) {
 		glGenTextures(1, &handle);
 		bind();
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+		glTexParameteri(glenum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage2D(glenum, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
 	}
 
-	void Image::bind() const { glBindTexture(GL_TEXTURE_2D, handle); }
+	void Image::bind() const { glBindTexture(glenum, handle); }
 
 	unsigned int Image::raw_gl_handle() const { return handle; }
 	void Image::bind_to_layout_location(unsigned int index, ELoadStoreMode access) const { glBindImageTexture(index, handle, 0, false, 0, (GLenum)access, GL_RGBA32F); }
@@ -121,15 +124,51 @@ namespace TT {
 
 	void Image::set_data(const void* data) {
 		bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+		glTexImage2D(glenum, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
 	}
 
 	void Image::set_data(int width, int height, const void* data) {
 		this->width = width;
 		this->height = height;
 		bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+		glTexImage2D(glenum, 0, gl_internal_format(channels, channel_format), width, height, 0, gl_channels(channels), gl_channel_format(channel_format), data);
 	}
+
+
+	Image3D::Image3D(Image3D&& other) : depth(other.depth), Image((Image&&)other) { glenum = other.glenum; }
+
+	Image3D& Image3D::operator=(Image3D&& other) { glenum = other.glenum; depth = other.depth; return (Image3D&)Image::operator=((Image&&)other); }
+	
+	Image3D::~Image3D() { glDeleteTextures(1, &handle); handle = 0; }
+
+	Image3D::Image3D(int width, int height, int depth, int channels, const char* data, EChannelFormat channel_format) {
+		glenum = GL_TEXTURE_3D;
+		this->width = width;
+		this->height = height;
+		this->depth = depth;
+		this->channels = channels;
+		this->channel_format = channel_format;
+		glGenTextures(1, &handle);
+		bind();
+		glTexParameteri(glenum, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexImage3D(glenum, 0, gl_internal_format(channels, channel_format), width, height, depth, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+	}
+
+	int Image3D::get_depth() const { return depth; }
+
+	void Image3D::set_data(const void* data) {
+		bind();
+		glTexImage3D(glenum, 0, gl_internal_format(channels, channel_format), width, height, depth, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+	}
+
+	void Image3D::set_data(int width, int height, int depth, const void* data) {
+		this->width = width;
+		this->height = height;
+		this->depth = depth;
+		bind();
+		glTexImage3D(glenum, 0, gl_internal_format(channels, channel_format), width, height, depth, 0, gl_channels(channels), gl_channel_format(channel_format), data);
+	}
+
 
 	RenderTarget::RenderTarget(RenderTarget&& other) {
 		handle = other.handle;
@@ -233,7 +272,10 @@ namespace TT {
 	UniformValue::UniformValue(float x, float y, float z) { data.f[0] = x; data.f[1] = y; data.f[2] = z; num_values = 3; type = Type::Float; }
 	UniformValue::UniformValue(float x, float y, float z, float w) { data.f[0] = x; data.f[1] = y; data.f[2] = z; data.f[3] = w; num_values = 4; type = Type::Float; }
 	UniformValue::UniformValue(int value) { data.i[0] = value; num_values = 1; type = Type::Int; }
+	UniformValue::UniformValue(int x, int y) { data.i[0] = x; data.i[1] = y; num_values = 2; type = Type::Int; }
+	UniformValue::UniformValue(int x, int y, int z) { data.i[0] = x; data.i[1] = y; data.i[2] = z; num_values = 3; type = Type::Int; }
 	UniformValue::UniformValue(unsigned int x, unsigned int y) { data.u[0] = x; data.u[1] = y; num_values = 2; type = Type::UInt; }
+	UniformValue::UniformValue(unsigned int x, unsigned int y, unsigned int z) { data.u[0] = x; data.u[1] = y; data.u[2] = z; num_values = 3; type = Type::UInt; }
 	UniformValue::UniformValue(const Image* value) { data.image_address = value; num_values = 1; type = Type::Image; }
 	UniformValue::UniformValue(const Mat44& value) { static_assert(sizeof(Mat44) == sizeof(float) * 16, ""); CopyMemory(data.f, &value, sizeof(float) * 16); num_values = 1; type = Type::Mat44; }
 
@@ -244,7 +286,10 @@ namespace TT {
 	void Material::set(const char* name, float x, float y, float z) { uniforms[program.uniform(name)] = UniformValue(x, y, z); }
 	void Material::set(const char* name, float x, float y, float z, float w) { uniforms[program.uniform(name)] = UniformValue(x, y, z, w); }
 	void Material::set(const char* name, int value) { uniforms[program.uniform(name)] = UniformValue(value); }
+	void Material::set(const char* name, int x, int y) { uniforms[program.uniform(name)] = UniformValue(x, y); }
+	void Material::set(const char* name, int x, int y, int z) { uniforms[program.uniform(name)] = UniformValue(x, y, z); }
 	void Material::set(const char* name, unsigned int x, unsigned int y) { uniforms[program.uniform(name)] = UniformValue(x, y); }
+	void Material::set(const char* name, unsigned int x, unsigned int y, unsigned int z) { uniforms[program.uniform(name)] = UniformValue(x, y, z); }
 	void Material::set(const char* name, const Image* value) { uniforms[program.uniform(name)] = UniformValue(value); }
 	void Material::set(const char* name, const Mat44& value) { uniforms[program.uniform(name)] = UniformValue(value); }
 
@@ -279,20 +324,6 @@ namespace TT {
 					glUniform3uiv(pair.first, 1, pair.second.data.u); break;
 				case 4:
 					glUniform4uiv(pair.first, 1, pair.second.data.u); break;
-				}
-				break;
-			}
-			case UniformValue::Type::UInt:
-			{
-				switch (pair.second.num_values) {
-				case 1:
-					glUniform1uiv(pair.first, 1, (const unsigned int*)pair.second.data); break;
-				case 2:
-					glUniform2uiv(pair.first, 1, (const unsigned int*)pair.second.data); break;
-				case 3:
-					glUniform3uiv(pair.first, 1, (const unsigned int*)pair.second.data); break;
-				case 4:
-					glUniform4uiv(pair.first, 1, (const unsigned int*)pair.second.data); break;
 				}
 				break;
 			}
@@ -424,7 +455,13 @@ namespace TT {
 
 	void Mesh::draw() const {
 		glBindVertexArray(vao);
-		glDrawElements(primitive_type, index_count, index_type, 0);
+		glDrawElements(primitive_type, index_count, index_type, nullptr);
+		glBindVertexArray(0);
+	}
+
+	void Mesh::draw_instanced(unsigned int instance_count) const {
+		glBindVertexArray(vao);
+		glDrawElementsInstanced(primitive_type, index_count, index_type, nullptr, instance_count);
 		glBindVertexArray(0);
 	}
 

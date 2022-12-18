@@ -76,12 +76,29 @@ namespace TT {
 		void set_data(const void* data);
 		void set_data(int width, int height, const void* data);
 
-	private:
+	protected:
+		Image() {}
 		unsigned int handle;
 		int width;
 		int height;
 		int channels;
 		EChannelFormat channel_format;
+		unsigned int glenum = 0x0DE1 /*GL_TEXTURE_2D*/;
+	};
+
+	struct Image3D : public Image {
+		Image3D(Image3D&& other);
+		Image3D& operator=(Image3D&& other);
+		~Image3D();
+		Image3D(int width, int height, int depth, int channels = 3, const char* data = nullptr, EChannelFormat channel_format = EChannelFormat::U8);
+		int get_depth() const;
+
+		// Data can be nullptr to just allocate
+		void set_data(const void* data);
+		void set_data(int width, int height, int depth, const void* data);
+
+	private:
+		int depth;
 	};
 
 	struct RenderTarget : GLObject {
@@ -154,7 +171,10 @@ namespace TT {
 		UniformValue(float x, float y, float z);
 		UniformValue(float x, float y, float z, float w);
 		UniformValue(int value);
+		UniformValue(int x, int y);
+		UniformValue(int x, int y, int z);
 		UniformValue(unsigned int x, unsigned int y);
+		UniformValue(unsigned int x, unsigned int y, unsigned int z);
 		UniformValue(const Image* value);
 		UniformValue(const Mat44& value);
 
@@ -172,7 +192,10 @@ namespace TT {
 		void set(const char* name, float x, float y, float z);
 		void set(const char* name, float x, float y, float z, float w);
 		void set(const char* name, int value);
+		void set(const char* name, int x, int y);
+		void set(const char* name, int x, int y, int z);
 		void set(const char* name, unsigned int x, unsigned int y);
+		void set(const char* name, unsigned int x, unsigned int y, unsigned int z);
 		void set(const char* name, const Image* value);
 		void set(const char* name, const Mat44& value);
 		void use() const;
@@ -206,6 +229,7 @@ namespace TT {
 		Mesh(const std::initializer_list<float>& vertices, const std::initializer_list<unsigned short>& indices, const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type, unsigned int mode = 0x88E4 /*GL_STATIC_DRAW*/);
 		Mesh(const std::initializer_list<float>& vertices, const std::initializer_list<unsigned char>& indices, const std::initializer_list<MeshAttribute>& attrs, unsigned int primitive_type, unsigned int mode = 0x88E4 /*GL_STATIC_DRAW*/);
 		void draw() const;
+		void draw_instanced(unsigned int instance_count) const;
 
 		const Buffer& get_vbo() const { return vbo; }
 		const Buffer& get_ibo() const  { return ibo; }
