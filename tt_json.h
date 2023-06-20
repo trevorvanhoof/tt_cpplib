@@ -376,31 +376,33 @@ namespace TTJson {
 		// Look-ahead for null and bool
 		size_t cursor = data->tellg();
 		if (cursor + 5 < data_size) {
-			char buf[5];
-			data->read(buf, 5);
+			char buf[6];
+			buf[0] = byte;
+			buf[5] = '\0';
+			data->read(buf + 1, 4);
 			std::transform(buf, buf + 5, buf, [](unsigned char c) { return std::tolower(c); });
 			if (strcmp(buf, "false") == 0) {
-				cursor += 5;
+				readByte();
 				return Value(false);
 			}
-			data->seekg(-5, std::ios::cur);
+			data->seekg(cursor, std::ios::beg);
 		}
 		if (cursor + 4 < data_size) {
 			char buf[5];
-			data->read(buf, 4);
-			std::transform(buf, buf + 5, buf, [](unsigned char c) { return std::tolower(c); });
+			buf[0] = byte;
+			buf[4] = '\0';
+			data->read(buf + 1, 3);
+			std::transform(buf, buf + 4, buf, [](unsigned char c) { return std::tolower(c); });
 			if (strcmp(buf, "true") == 0) {
-				cursor += 4;
+				readByte();
 				return Value(true);
 			}
 			if (strcmp(buf, "null") == 0) {
-				cursor += 4;
+				readByte();
 				return Value();
 			}
-			data->seekg(-4, std::ios::cur);
+			data->seekg(cursor, std::ios::beg);
 		}
-
-		size_t tmp = data->tellg();
 		return consumeNumber();
 	}
 

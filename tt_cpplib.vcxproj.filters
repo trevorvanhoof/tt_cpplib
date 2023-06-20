@@ -1,0 +1,191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Third Party">
+      <UniqueIdentifier>{92f3e400-0cd3-48b7-ae86-c0de6fc45e9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Third Party\Fontstash">
+      <UniqueIdentifier>{7561cdf4-9965-4604-bec6-39b087211f48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Third Party\Stb">
+      <UniqueIdentifier>{df0e7bea-f13b-4486-8853-f91b34cecc1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Third Party\Khronos">
+      <UniqueIdentifier>{db96047d-0a6f-4052-acf2-cb98725a7dd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Third Party\Earcut">
+      <UniqueIdentifier>{81365921-89e2-49f8-9d72-db4a78b165f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{44443bd2-7063-4e8d-b658-cf61c286c86d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{3592f029-0810-49a1-ad56-2d27b0deb756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{14b903d8-99bb-49d4-81a3-6294dea8ed28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\OpenGL">
+      <UniqueIdentifier>{88f1707a-2ee5-4d50-9ec4-b4d7e88bb0ee}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fontstash\gl3corefontstash.h">
+      <Filter>Third Party\Fontstash</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash\glfontstash.h">
+      <Filter>Third Party\Fontstash</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash\fontstash.h">
+      <Filter>Third Party\Fontstash</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash\stb_truetype.h">
+      <Filter>Third Party\Stb</Filter>
+    </ClInclude>
+    <ClInclude Include="KHR\khrplatform.h">
+      <Filter>Third Party\Khronos</Filter>
+    </ClInclude>
+    <ClInclude Include="glext.h">
+      <Filter>Third Party\Khronos</Filter>
+    </ClInclude>
+    <ClInclude Include="earcut.hpp">
+      <Filter>Third Party\Earcut</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Third Party\Stb</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_cgmath.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_gl.h">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_gl_handles.h">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_files.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_json.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_math.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_messages.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_render_concepts.h">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_program_manager.h">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_signals.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_window.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_strings.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="windont.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_components.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_orbit_camera.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="gl46corefontstash.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_ui.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_containers.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_containers_fixed.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="fontstash\fontstash.cpp">
+      <Filter>Third Party\Fontstash</Filter>
+    </ClCompile>
+    <ClCompile Include="earcut.cpp">
+      <Filter>Third Party\Earcut</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>Third Party\Stb</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_cgmath.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_gl.cpp">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_gl_handles.cpp">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_files.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_json.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_math.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_messages.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_program_manager.cpp">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_render_concepts.cpp">
+      <Filter>Rendering\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_signals.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_window.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_strings.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_components.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_orbit_camera.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_ui.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="eartcut_LICENSE.txt">
+      <Filter>Third Party\Earcut</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="tt_gl_impl.inc">
+      <Filter>Rendering\OpenGL</Filter>
+    </None>
+    <None Include="tt_gl_impl_dbg.inc">
+      <Filter>Rendering\OpenGL</Filter>
+    </None>
+    <None Include="tt_gl_defs_dbg.inc">
+      <Filter>Rendering\OpenGL</Filter>
+    </None>
+    <None Include="tt_gl_defs.inc">
+      <Filter>Rendering\OpenGL</Filter>
+    </None>
+    <None Include="README.md" />
+  </ItemGroup>
+</Project>
