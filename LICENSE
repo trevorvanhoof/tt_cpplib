@@ -1,3 +1,34 @@
+DISCLAIMER: I am not a legal expert, it is my understanding that all of these licenses permit redistribution, including for commercial use, as long as their respective license files and copyright notices are included in the distribution.
+
+If you wish to use this software, icluding its dependencies, please consult a legal expert.
+
+If you own or maintain any of the dependencies included in this repository, and do not wish for a version of it to be included in this repository, please contact me at trevor.vhoof (at) gmail.com.
+
+--- 
+
+THIRD PARTY LICENSES & ATTRIBUTION
+
+--- 
+
+KHR/khrplatform.h & glext.h are MIT licensed, full license at start of file.
+Copyright (c) 2008-2018 The Khronos Group Inc.
+
+fontstash is zlib licensed, full license at fontstash/LICENSE.txt
+Copyright (c) 2013 Mikko Mononen memon@inside.org
+Fontstash has been extended with an OpenGl 4.6 compatible implemntation, see gl46corefontstash.h.
+
+fontstash/stb_truetype.h & stb_image.h are public domain, full license at end of file.
+Copyright (c) 2017 Sean Barrett
+
+earcut.hpp is ISC licensed
+Copyright (c) 2015, Mapbox
+
+--- 
+
+TT_CPPLIB LICENSE & ATTRIBUTION
+
+--- 
+
 MIT License
 
 Copyright (c) 2022 Trevor van Hoof
