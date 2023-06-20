@@ -1,75 +1,72 @@
 #include "tt_messages.h"
-#include <Windows.h>
+#include "windont.h"
 #include <cstdio>
 
-namespace TT {
+namespace {
 	// Caller owns the return value
-	static char* _FormatStr(const char* fmt, va_list args)
-	{
+	char* _formatStr(const TT::ConstStringView& fmt, va_list args) {
 		size_t size;
-		#pragma warning(suppress:28719)    // 28719
-		size = vsnprintf(nullptr, 0, fmt, args);
+#pragma warning(suppress:28719)    // 28719
+		size = vsnprintf(nullptr, 0, fmt.start, args);
 
 		char* message = new char[size + 1u];
-		vsnprintf(message, size + 1u, fmt, args);
+		vsnprintf(message, size + 1u, fmt.start, args);
 		message[size] = '\0';
 
 		return message;
 	}
 
+	void _message(const TT::ConstStringView& title, unsigned int flags, const TT::ConstStringView& fmt, va_list args) {
+		const char* message = _formatStr(fmt, args);
+		if (IsDebuggerPresent()) {
+			OutputDebugStringA(message);
+			OutputDebugStringA("\n");
+		}
+		else
+			MessageBoxA(0, message, title.start, flags);
+		delete message;
+	}
+}
+
+namespace TT {
 	// Caller owns the return value
-	char* FormatStr(const char* fmt, ...)
-	{
+	char* formatStr(const ConstStringView& fmt, ...) {
 		va_list args;
-		__crt_va_start(args, fmt);
-		char* message = _FormatStr(fmt, args);
+		__crt_va_start(args, fmt.start);
+		char* message = _formatStr(fmt, args);
 		__crt_va_end(args);
 		return message;
 	}
 
-	static void _Message(const char* title, unsigned int flags, const char* fmt, va_list args)
-	{
-		const char* message = _FormatStr(fmt, args);
-		if (IsDebuggerPresent())
-			OutputDebugStringA(message);
-		else
-			MessageBoxA(0, message, title, flags);
-		delete message;
-	}
-
-	void Info(const char* fmt, ...)
-	{
+	void info(const ConstStringView& fmt, ...) {
 		va_list args;
-		__crt_va_start(args, fmt);
-		_Message("Info", MB_OK | MB_ICONINFORMATION, fmt, args);
+		__crt_va_start(args, fmt.start);
+		_message("Info", MB_OK | MB_ICONINFORMATION, fmt, args);
 		__crt_va_end(args);
 	}
 
-	void Warning(const char* fmt, ...)
-	{
+	void warning(const ConstStringView& fmt, ...) {
 		va_list args;
-		__crt_va_start(args, fmt);
-		_Message("Warning", MB_OK | MB_ICONWARNING, fmt, args);
+		__crt_va_start(args, fmt.start);
+		_message("Warning", MB_OK | MB_ICONWARNING, fmt, args);
 		__crt_va_end(args);
 		if (IsDebuggerPresent())
 			DebugBreak();
 	}
 
-	void Error(const char* fmt, ...)
-	{
+	void error(const ConstStringView& fmt, ...) {
 		va_list args;
-		__crt_va_start(args, fmt);
-		_Message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
+		__crt_va_start(args, fmt.start);
+		_message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
 		__crt_va_end(args);
 		if (IsDebuggerPresent())
 			DebugBreak();
 	}
 
-	void Fatal(char* fmt, ...)
-	{
+	void fatal(const ConstStringView& fmt, ...) {
 		va_list args;
-		__crt_va_start(args, fmt);
-		_Message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
+		__crt_va_start(args, fmt.start);
+		_message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
 		__crt_va_end(args);
 		if (IsDebuggerPresent())
 			DebugBreak();
@@ -77,28 +74,31 @@ namespace TT {
 			ExitProcess(0);
 	}
 
-	void Assert(bool expression)
-	{
+#ifdef assert
+#undef assert
+#endif
+
+	bool assert(bool expression) {
 		if (expression)
-			return;
+			return true;
 		if (IsDebuggerPresent())
 			DebugBreak();
+		return false;
 	}
 
-	void Assert(bool expression, char* fmt, ...)
-	{
+	bool assert(bool expression, const ConstStringView& fmt, ...) {
 		if (expression)
-			return;
+			return true;
 		va_list args;
-		__crt_va_start(args, fmt);
-		_Message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
+		__crt_va_start(args, fmt.start);
+		_message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
 		__crt_va_end(args);
 		if (IsDebuggerPresent())
 			DebugBreak();
+		return false;
 	}
 
-	void AssertFatal(bool expression)
-	{
+	void assertFatal(bool expression) {
 		if (expression)
 			return;
 		if (IsDebuggerPresent())
@@ -107,13 +107,12 @@ namespace TT {
 			ExitProcess(0);
 	}
 
-	void AssertFatal(bool expression, const char* fmt, ...)
-	{
+	void assertFatal(bool expression, const ConstStringView& fmt, ...) {
 		if (expression)
 			return;
 		va_list args;
-		__crt_va_start(args, fmt);
-		_Message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
+		__crt_va_start(args, fmt.start);
+		_message("Error", MB_OK | MB_ICONEXCLAMATION, fmt, args);
 		__crt_va_end(args);
 		if (IsDebuggerPresent())
 			DebugBreak();
