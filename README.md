@@ -4,63 +4,152 @@ Compact C++ utilities for Windows.
 I find myself building similar utilities every project I mess around with, so I decided to start cleaning and collecting utilities.
 
 Disclaimer: 
-I am not as versed in C++, and frankly usually care more about building stuff than learning esoteric details about a language I dislike. 
-Much of this code will be inefficient, or not following good paradigms, use at your own risk.
+I am not as versed in C++, and frankly usually care more about building stuff. My applications tend to run on a modern Windows desktop without
+doing anything so demanding it really needs highly optimized C++, so much of this code may not be optimized.
+
+Requires C++20 (designated initializes, non-const std::string::data()).
 
 ## Modules
 
-### tt_messages
+### Core
+
+#### CGMath
+
+Math that should match OpenGL conventions.
+
+Should match the output of old style OpenGL with glTranslate, glRotate and glFrustum calls.
+
+You can compare it with that using this to override the state with the CGMath state:
+
+```
+glMatrixMode(GL_PROJECTION)
+glLoadMatrixf(P.m)
+
+glMatrixMode(GL_MODELVIEW)
+glLoadMatrixf((M * V).m)
+```
+
+Or use it as a uniform:
+
+```
+glUniformMatrix4fv(glGetUniformLocation(program, "uMVP"), 1, false, (M * V * P).m);
+```
+
+and with the following vertex shader:
+
+```
+#version 410
+layout(location = 0) in vec3 inPosition;
+uniform mat4 uMVP;
+void main() {
+    gl_Position = uMVP * vec4(inPosition, 1.0);
+}
+```
+
+#### Components
+
+This is a basic entity-component system that allows setting up a hierarchy (tree) of transforms,
+cameras, and drawables, resulting in an easy way to render hierarchies of 3D models.
+
+#### Files
+
+File IO utilities that avoid having to deal with the horror that is C++ IO.
+Using fopen and FILE over ifstream because sometimes SEEK_END on an ifstream yields in numbers != the actual file size and fread with large numbers does not guarantee it will read the requested number of bytes even if the file has that many bytes left.
+
+#### Json
+
+Header-only json parser depending only on the standard library.
+Can parse strings and streams.
+
+#### Math
+
+Most of this exists in the standard library, but with added support for cgmath vectors.
+I.e. min() will perform a component-wise min on the components.
+It also contains a mod() that uses glsl-style modulo (creating a continuous sawtooth from negative to positive, no mirror image around 0. fract() also uses this mod.
+
+#### Messages
 
 Utilities for formatting strings, logging, warning and raising errors.
 
 If you are not debugging, every message will be shown as a dialog, we do not use exceptions so a fatal error will likely crash directly after.
-If you are debugging, every message will be sent to the output log, warnings and errors will break.
+If you are debugging, every message will be sent to the output log, warnings and errors will break with __debugbreak().
 
-TODO: Port to std::string
+#### Signals
 
-### tt_customwindow
+Signal & slot pattern that does not require code generation.
+When you have an object that wants its method to be called, you can add a Lifetime member to it and use the macro `TT_CONNECT0_SELF(signal, Class::callback)`.
+The digit in the macro name is the number of arguments the function takes, so use the appropriate macro for the signal.
+You can leave out "self" to pass in a pointer to the object owning the message if you don't want to use "this".
+You can suffix the macro with _L if you do not wish to use a lifetime, this does imply that you guarantee yourself that the owner of the signal will die before the owner of the callback.
+Yoiu can also use std bind manually to call global functions as callbacks: `signal.connect(std::bind(&callback, std::placeholders::_1));`.
 
-A Window class that receives messages in a slightly higher level format.
-Subclass and implement the events. Note the CreateGLContext() utility function.
+#### Strings
 
-### OpenGL
+String views and other utilities to interact with strings.
 
-You'll need to download glext.h yourself, see the downlad_glext shortcut in the repo.
+#### windont.h
 
-#### tt_gl_h.h
+Never include windows.h, always include windont.h. It avoids leaking macros so you can safely call TT::assert and std::min.
+Though it may undefine YOUR macros if they clash with the windows macros, you should not be using common english words as macros either.
 
-Include this in any header that needs knowledge of OpenGL.
-It avoids including Windows.h because it is an intrusive header.
+### Rendering/OpenGL
 
-#### tt_glext_win.h
+#### GL
 
-Include in any source file that needs to call into OpenGL.
-Beware that it includes Windows.h. It does use the VC_EXTRALEAN and WIN32_LEAN_AND_MEAN macros.
+Include tt_gl.h and call loadGLFunctions() to get all OpenGL functions.
+Define TT_GL_DBG to make each call also use glGetError and warn about anything that is not GL_NO_ERROR.
+The implementation of TT_GL_DBG has as drawback that you can not inline return values.
+This is the macro expansion to explain why:
 
-#### tt_gl_cpp.h
+```
+// Without TT_GL_DBG this works:
+glUniform1f(glGetUniformLocation(program, "test"), 1.0f);
+// With TT_GL_DBG it expands to:
+glUniform1f(glGetUniformLocation(program, "test"); TT::checkGLErrors();, 1.0f); TT::checkGLErrors();
+//                                               ^ Unexpected emicolon
+```
 
-This auto-generated file defines all OpenGL functions in existance as macros that use wglGetProcAddress and a cast to get the function as-needed.
+So when developing it may be best to leave this ON (as long as performance permits) to ensure
+you don't have a lot of work to do once you actually need it.
 
-TODO: Convert to an Initialize function that loads the functions exactly once.
+#### Handles
 
-#### tt_globjects
+Some simple concepts have been wrapped with wrapper functions to help using OpeNGL.
+Handles are copyable and may be constructed without an OpenGL context, so you have to call alloc() and cleanup() manually.
 
-Wraps OpenGL concepts in an object oriented way where the instances owmn their resources.
-I work on this as I need it, so only some concepts are wrapped so far: Mesh (VAO), Image (texture2D), Program, Shader.
-An additional high level concept include a Material, which holds one possible set of uniforms for a program.
+#### Program manager
 
-#### tt_debugdraw_2d
+This wraps the program (handle), with a little more utility. The ProgramManager singleton is instantiated
+automatically and can cache & pool any shader and program that gets requested. Shaders are read with #include support
+and non-copyable Program handles are returned for use in a Material.
 
-Draw lines, rectangles, triangle fans, and on-screen text.
-We use a spritefont and require https://github.com/nothings/stb/blob/master/stb_image.h to load it.
-Shoutout to FiraCode which is in the sprites: https://github.com/tonsky/FiraCode, a great font that I am not benefitting from here because of the spritefont.
+Remove the NO_QT define at the top of the header to swap for a version that relies on the Qt library (that I am not free to distribute)
+for file watching, this results in automatic recompilation of any shader, and relinking of any dependent program, as soon as the file on disk gets altered. 
+Great for iterating your shaders.
 
-#### tt_debugdraw_3d
+#### Render concepts
 
-A subclass of the 2D drawer that supports transforming 3D points into 2D before drawing them. 
-The 3D math is currently not performed in the shader, but instead we depend on https://github.com/trevorvanhoof/MMath.
+Render concepts simplify object construction and groups logical concepts together.
+A mesh wraps the vertex attribute layout (TT::MeshAttrib) and vertex and index buffer data (TT::Buffer).
 
-### tt_json
+MeshAttrib has the added benefit that it calls the right variation of glVertexAttrib[I|L]Pointer based on the element data type.
+This does mean you can't upload an array of ints and expect it to automatically get converted to floats by the driver.
 
-A single header Json reader & writer, with optional trailing comma support. You should probably be using rapidjson instead.
-I wrote this for fun & to match the implementation of a C# parser I wrote: https://github.com/trevorvanhoof/MiniJsonParser
+The Material concept wraps a program and a map of uniform name & value pairs.
+
+### UI
+
+#### Window
+
+An OpenGL capable window that handles windows messages.
+Inherit the Window class and implement the on[x]Event(...) methods to respond to keyboard and mouse logic.
+There is a very minimal snippet at the top of tt_window.h to set up a windows GUI application using this class.
+
+#### OrbitCameraControl
+
+Something to assist in controlling a camera component with the mouse. Use with a custom tt_window to forward mouse events and easily
+render a 3D scene using tt_components and tt_render_concepts.
+
+#### UI
+
+Extremely WIP
