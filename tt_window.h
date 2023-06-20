@@ -75,9 +75,10 @@ namespace TT {
 	};
 
 	enum class Modifiers {
-		None = 0b00,
-		Ctrl = 0b01,
-		Shift = 0b10,
+		None = 0b000,
+		Ctrl = 0b001,
+		Shift = 0b010,
+		Alt = 0b100,
 	};
 
 	struct MouseEvent : public Event {
@@ -107,33 +108,33 @@ namespace TT {
 	public:
 		Window(const char* windowTitle = "Window", HINSTANCE__* hInstance = 0);
 		std::function<void(Event&)> eventHandler;
-		void Show();
-		int Width() const;
-		int Height() const;
-		HDC__* GetGLContext();
-		HDC__* CreateGLContext();
-		static bool HasVisibleWindows();
-		void HandleEvent(Event& event);
-		void Repaint();
+		void show();
+		int width() const;
+		int height() const;
+		HDC__* getGLContext() const;
+		HDC__* createGLContext() const;
+		static bool hasVisibleWindows();
+		void handleEvent(const Event& event);
+		void repaint() const;
 
 	protected:
 		bool enableMouseTracking = false;
 		unsigned int mouseButtonStates = 0;
 
-		virtual void OnPaintEvent(PaintEvent event) {}
-		virtual void OnResizeEvent(ResizeEvent event) {}
-		virtual void OnMouseEvent(MouseEvent event) {}
-		virtual void OnWheelEvent(WheelEvent event) {}
-		virtual void OnKeyEvent(KeyEvent event) {}
+		virtual void onPaintEvent(const PaintEvent& event) {}
+		virtual void onResizeEvent(const ResizeEvent& event) {}
+		virtual void onMouseEvent(const MouseEvent& event) {}
+		virtual void onWheelEvent(const WheelEvent& event) {}
+		virtual void onKeyEvent(const KeyEvent& event) {}
 
 	private:
 		HWND__* window;
-		int width;
-		int height;
+		int _width;
+		int _height;
 		static unsigned int modifierStates;
 		// the window callback can't be a bound function, so we have to track it ourselves
 		static std::unordered_map<HWND__*, Window*> dankjewelwindows;
 		static bool haveWindowClass;
-		static LRESULT __stdcall WindowProc(HWND__* hwnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+		static LRESULT __stdcall windowProc(HWND__* hwnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
 	};
 }
