@@ -32,6 +32,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 #include <functional>
 #include <unordered_map>
+#include <string>
 
 struct HINSTANCE__;
 struct HWND__;
@@ -44,6 +45,18 @@ typedef long long LRESULT;
 typedef unsigned int WPARAM;
 typedef long LPARAM;
 typedef long LRESULT;
+#endif
+
+#ifndef TT_LIT
+#ifdef UNICODE
+#define TT_LIT(text) L##text
+typedef wchar_t char_t;
+typedef std::wstring str_t;
+#else
+#define TT_LIT(text) text
+typedef char char_t;
+typedef std::string str_t;
+#endif
 #endif
 
 namespace TT {
@@ -59,8 +72,17 @@ namespace TT {
 			KeyUp,
 			Resize,
 			Paint,
+			Focus,
+			Close,
 		};
 		EType type = EType::Invalid;
+	};
+
+	enum class Modifiers {
+		None = 0b000,
+		Ctrl = 0b001,
+		Shift = 0b010,
+		Alt = 0b100,
 	};
 
 	struct PaintEvent : public Event {
@@ -74,13 +96,6 @@ namespace TT {
 		int height = 0;
 	};
 
-	enum class Modifiers {
-		None = 0b000,
-		Ctrl = 0b001,
-		Shift = 0b010,
-		Alt = 0b100,
-	};
-
 	struct MouseEvent : public Event {
 		int button = 0; // -1 in case of move
 		int x = 0;
@@ -88,34 +103,42 @@ namespace TT {
 		Modifiers modifiers = Modifiers::None;
 	};
 
+	struct KeyEvent : public Event {
+		unsigned int key; // virtual key code, TODO: make some massive enum mapping to avoid having this as windows-specific
+		str_t txt; // translated character(s)
+		bool isRepeat;
+		Modifiers modifiers = Modifiers::None;
+	};
+
 	struct WheelEvent : public Event {
 		WheelEvent() { type = Event::EType::Wheel; }
-		WheelEvent(int delta, int x, int y, Modifiers modifiers) : delta(delta), x(x), y(y), modifiers(modifiers) { type = Event::EType::Wheel; }
 		int delta = 0;
 		int x = 0;
 		int y = 0;
 		Modifiers modifiers = Modifiers::None;
 	};
 
-	struct KeyEvent : public Event {
-		unsigned int key; // virtual key code, TODO: make some massive enum mapping to avoid having this as windows-specific
-		char chr; // translated character, 0 if no such character, we do not handle unicode at this time
-		bool isRepeat;
-		Modifiers modifiers = Modifiers::None;
-	};
+    struct FocusEvent : public Event {
+        FocusEvent() { type = Event::EType::Focus; }
+        // 0 if focus lost, 1 if focus gained, -1 if unknown
+        char hasMouseFocus = -1;
+        char hasKeyboardFocus = -1;
+    };
+
+    struct CloseEvent : public Event {
+        CloseEvent() { type = Event::EType::Close; }
+    };
 
 	class Window {
-	public:
-		Window(const char* windowTitle = "Window", HINSTANCE__* hInstance = 0);
-		std::function<void(Event&)> eventHandler;
-		void show();
-		int width() const;
-		int height() const;
-		HDC__* getGLContext() const;
-		HDC__* createGLContext() const;
-		static bool hasVisibleWindows();
+		// the window callback can't be a bound function, so we have to track it ourselves
+		static std::unordered_map<HWND__*, Window*> dankjewelwindows;
+		static LRESULT __stdcall windowProc(HWND__* hwnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+
+		HWND__* window;
+		int _width;
+		int _height;
+
 		void handleEvent(const Event& event);
-		void repaint() const;
 
 	protected:
 		bool enableMouseTracking = false;
@@ -126,15 +149,22 @@ namespace TT {
 		virtual void onMouseEvent(const MouseEvent& event) {}
 		virtual void onWheelEvent(const WheelEvent& event) {}
 		virtual void onKeyEvent(const KeyEvent& event) {}
+		virtual void onFocusEvent(const FocusEvent& event) {}
+		virtual void onCloseEvent(const CloseEvent& event) { delete this; }
 
-	private:
-		HWND__* window;
-		int _width;
-		int _height;
-		static unsigned int modifierStates;
-		// the window callback can't be a bound function, so we have to track it ourselves
-		static std::unordered_map<HWND__*, Window*> dankjewelwindows;
-		static bool haveWindowClass;
-		static LRESULT __stdcall windowProc(HWND__* hwnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+	public:
+		static bool hasVisibleWindows();
+
+		Window(const char_t* windowTitle = "Window", HINSTANCE__* hInstance = 0);
+		~Window();
+
+		void repaint() const;
+		void show();
+		int width() const;
+		int height() const;
+
+		std::function<void(Event&)> eventHandler; // Uses Window::handlEvent() by default.
+		HDC__* getGLContext() const;
+		HDC__* createGLContext() const;
 	};
 }
