@@ -53,6 +53,13 @@ SOFTWARE.
 */
 #pragma once
 
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <codecvt>
+#include <functional>
+#include <unordered_map>
+
 // Options:
 // Use wchar_t and std::wstring.
 // #define TT_JSON5_USE_WSTR
@@ -92,13 +99,6 @@ SOFTWARE.
 // By default, whitespace skipping calls are only in places where the json spec allows it.
 #define TT_JSON5_SUPPORT_MORE_WHITESPACE // Enable more whitespace skipping calls, because in our implementation comments are treated as whitespace, this is a must when allowing comments.
 #endif
-
-// Header
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <codecvt>
-#include <unordered_map>
 
 namespace TTJson {
 #ifdef TT_JSON5_USE_WSTR
@@ -149,8 +149,19 @@ namespace TTJson {
         Null
     };
 
-    typedef std::vector<class Value> Array;
-    typedef std::unordered_map<str_t, class Value> Object;
+    class Value;
+
+    class Array : public std::vector<Value> {
+    public:
+        Value& operator[](size_t index);
+        const Value& operator[](size_t index) const;
+    };
+
+    class Object : public std::unordered_map<str_t, Value> {
+    public:
+        Value& get(const str_t& key);
+        const Value& get(const str_t& key) const;
+    };
 
     class Value {
         friend class Parser;
@@ -165,6 +176,8 @@ namespace TTJson {
         Array aValue{};
         Object oValue{};
 
+        typedef void (*errorFunc)();
+
     public:
         Value(ValueType type = ValueType::Null);
         Value(bool value);
@@ -175,6 +188,22 @@ namespace TTJson {
         Value(float value);
         Value(double value);
         Value(long double value);
+
+        static errorFunc castErrorHandler;
+
+        const bool& asBool() const;
+        const long long& asInt() const;
+        const scalar& asDouble() const;
+        const str_t& asString() const;
+        const Array& asArray() const;
+        const Object& asObject() const;
+
+        bool& asBool();
+        long long& asInt();
+        scalar& asDouble();
+        str_t& asString();
+        Array& asArray();
+        Object& asObject();
     };
 
     class Parser {
@@ -232,7 +261,6 @@ namespace TTJson {
     void serialize(const Value& value, ostream_t& out, const char_t* tab = nullptr, int depth = 0);
 }
 
-// Source
 #ifdef TT_JSON5_IMPLEMENTATION
 namespace TTJson {
 #ifdef TT_JSON5_USE_WSTR
@@ -266,15 +294,57 @@ namespace TTJson {
         return { c };
     }
 
+    namespace {
+        Value _INVALID{};
+    }
+
+    Value& Array::operator[](size_t index) {
+        if (index >= size()) return _INVALID;
+        return std::vector<Value>::operator[](index);
+    }
+
+    const Value& Array::operator[](size_t index) const {
+        if (index >= size()) return _INVALID;
+        return std::vector<Value>::operator[](index);
+    }
+
+    Value& Object::get(const str_t& key) {
+        auto it = find(key);
+        if (find(key) == end()) return _INVALID;
+        return it->second;
+    }
+
+    const Value& Object::get(const str_t& key) const {
+        auto it = find(key);
+        if (find(key) == end()) return _INVALID;
+        return it->second;
+    }
+
+    Value::errorFunc Value::castErrorHandler = nullptr;
+
     Value::Value(ValueType type) : type(type) {}
     Value::Value(bool value) : type(ValueType::Bool), bValue(value) {}
     Value::Value(long long value) : type(ValueType::Int), iValue(value) {}
     Value::Value(str_t value) : type(ValueType::String), sValue(value) {}
-    Value::Value(const std::vector<Value>& value) : type(ValueType::Array), aValue(value) {}
-    Value::Value(const std::unordered_map<str_t, Value>& value) : type(ValueType::Object), oValue(value) {}
+    Value::Value(const Array& value) : type(ValueType::Array), aValue(value) {}
+    Value::Value(const Object& value) : type(ValueType::Object), oValue(value) {}
     Value::Value(float value) : type(ValueType::Double), dValue(value) {}
     Value::Value(double value) : type(ValueType::Double), dValue(value) {}
     Value::Value(long double value) : type(ValueType::Double), dValue(value) {}
+
+    const bool& Value::asBool() const { if (type != ValueType::Bool && castErrorHandler != nullptr) castErrorHandler(); return bValue; }
+    const long long& Value::asInt() const { if (type != ValueType::Int && castErrorHandler != nullptr) castErrorHandler(); return iValue; }
+    const scalar& Value::asDouble() const { if (type != ValueType::Double && castErrorHandler != nullptr) castErrorHandler(); return dValue; }
+    const str_t& Value::asString() const { if (type != ValueType::String && castErrorHandler != nullptr) castErrorHandler(); return sValue; }
+    const Array& Value::asArray() const { if (type != ValueType::Array && castErrorHandler != nullptr) castErrorHandler(); return aValue; }
+    const Object& Value::asObject() const { if (type != ValueType::Object && castErrorHandler != nullptr) castErrorHandler(); return oValue; }
+
+    bool& Value::asBool() { if (type != ValueType::Bool && castErrorHandler != nullptr) castErrorHandler(); return bValue; }
+    long long& Value::asInt() { if (type != ValueType::Int && castErrorHandler != nullptr) castErrorHandler(); return iValue; }
+    scalar& Value::asDouble() { if (type != ValueType::Double && castErrorHandler != nullptr) castErrorHandler(); return dValue; }
+    str_t& Value::asString() { if (type != ValueType::String && castErrorHandler != nullptr) castErrorHandler(); return sValue; }
+    Array& Value::asArray() { if (type != ValueType::Array && castErrorHandler != nullptr) castErrorHandler(); return aValue; }
+    Object& Value::asObject() { if (type != ValueType::Object && castErrorHandler != nullptr) castErrorHandler(); return oValue; }
 
     inline void Parser::clearError() {
         parseError.clear();
