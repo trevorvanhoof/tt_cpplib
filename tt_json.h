@@ -273,8 +273,7 @@ namespace TTJson {
                 raw = raw.substr(0, start) + std::string(tmp, bufSize) + raw.substr(start + 6);
                 start += bufSize;
                 delete[] tmp;
-            }
-            else {
+            } else {
                 raw = raw.substr(0, start) + raw.substr(start + 6);
             }
         }
@@ -642,8 +641,7 @@ namespace TTJson {
                 cursor += 5;
                 return Value(false);
             }
-        }
-        else if (cursor + 4 < text.size()) {
+        } else if (cursor + 4 < text.size()) {
             std::string tmp = text.substr(cursor, 4);
             std::transform(tmp.begin(), tmp.end(), tmp.begin(), [](unsigned char c) { return std::tolower(c); });
             if (tmp == "true") {
