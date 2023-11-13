@@ -56,10 +56,38 @@ cameras, and drawables, resulting in an easy way to render hierarchies of 3D mod
 File IO utilities that avoid having to deal with the horror that is C++ IO.
 Using fopen and FILE over ifstream because sometimes SEEK_END on an ifstream yields in numbers != the actual file size and fread with large numbers does not guarantee it will read the requested number of bytes even if the file has that many bytes left.
 
-#### Json
+#### Json5
 
 Header-only json parser depending only on the standard library.
-Can parse strings and streams.
+Can parse any istream.
+
+Example usage:
+```c++
+#include <iostream>
+
+// Include and implement json with wstrings.
+#define TT_JSON5_USE_WSTR
+#define TT_JSON5_IMPLEMENTATION
+#include "tt_json5.h"
+
+// Set a global error handler in case a value can not be found. In this case just trigger a breakpoint.
+#include <Windows.h>
+TTJson::Value::castErrorHandler = DebugBreak;
+
+int main() {
+    // Open a file as UTF8 encoded wifstream.
+    TTJson::ifstream_t stream = TTJson::readUtf8("my_data.json");
+    // Create a parser and a document.
+    TTJson::Parser parser;
+    TTJson::Value result;
+    // Parse the stream into the document.
+    parser.parse(stream, result);
+    // Print an element of the document.
+    // If castErrorHandler were unset and the document mismatches the expectations, this would silently fail and print an empty string.
+    std::wcout << result.asObject().get(L"keywords").asArray()[0].asString().c_str() << std::endl;
+    return 0;
+}
+```
 
 #### Math
 
