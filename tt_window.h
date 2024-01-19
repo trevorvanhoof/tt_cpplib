@@ -155,7 +155,7 @@ namespace TT {
 	public:
 		static bool hasVisibleWindows();
 
-		Window(const char_t* windowTitle = "Window", HINSTANCE__* hInstance = 0);
+		Window(const char_t* windowTitle = TT_LIT("Window"), HINSTANCE__* hInstance = 0);
 		~Window();
 
 		void repaint() const;
