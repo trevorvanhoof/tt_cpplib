@@ -3,15 +3,15 @@
 #include "tt_strings.h"
 
 namespace TT {
-	void info(const ConstStringView& fmt, ...);
-	void warning(const ConstStringView& fmt, ...);
-	void error(const ConstStringView& fmt, ...);
-	void fatal(const ConstStringView& fmt, ...);
+	void info(ConstStringView fmt, ...);
+	void warning(ConstStringView fmt, ...);
+	void error(ConstStringView fmt, ...);
+	void fatal(ConstStringView fmt, ...);
 #ifdef assert
 #undef assert
 #endif
 	bool assert(bool expression);
-	bool assert(bool expression, const ConstStringView& fmt, ...);
+	bool assert(bool expression, ConstStringView fmt, ...);
 	void assertFatal(bool expression);
-	void assertFatal(bool expression, const ConstStringView& fmt, ...);
+	void assertFatal(bool expression, ConstStringView fmt, ...);
 }

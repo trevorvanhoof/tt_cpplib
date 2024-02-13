@@ -252,7 +252,7 @@ namespace TT {
 			break;
 		case Type::Image:
 			glActiveTexture(GL_TEXTURE0 + imageCounter);
-			glBindTexture(image->anchor, image->handle); TT_GL_DBG_ERR;
+			image->bind();
 			glUniform1i(location, imageCounter);
 			++imageCounter;
 			break;

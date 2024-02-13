@@ -11,14 +11,14 @@ namespace TT {
 		if (!haveWindowClass) {
 			haveWindowClass = true;
 
-			WNDCLASSA wc = { 0 };
+			WNDCLASS wc = { 0 };
 			wc.lpfnWndProc = Window::windowProc;
-			wc.lpszClassName = "TTWindowClass";
+			wc.lpszClassName = TT_LIT("TTWindowClass");
 			wc.style = CS_DBLCLKS;
-			RegisterClassA(&wc);
+			RegisterClass(&wc);
 		}
 
-		window = CreateWindowExA(0, "TTWindowClass", windowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, hInstance, 0);
+		window = CreateWindowEx(0, TT_LIT("TTWindowClass"), windowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, hInstance, 0);
 		assert(window);
 		dankjewelwindows[window] = this;
 
@@ -28,8 +28,8 @@ namespace TT {
 	}
 
 	Window::~Window() {
-	    DestroyWindow(hwnd);
-	    dankjewelwindows.erase(this);
+	    DestroyWindow(window);
+	    dankjewelwindows.erase(window);
 	}
 
 	int Window::width() const {
@@ -174,8 +174,8 @@ namespace TT {
 		const int attribList[] = {
 			WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
 			WGL_CONTEXT_MINOR_VERSION_ARB, 6,
-			WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-			// WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+			// WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+			WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
 			0, // End
 		};
 		
@@ -201,7 +201,6 @@ namespace TT {
 
 	// Callback forwarding
 	std::unordered_map<HWND, Window*> Window::dankjewelwindows;
-	bool Window::haveWindowClass = false;
 
 	namespace {
         MouseEvent createMouseEvent(WPARAM wParam, LPARAM lParam, Event::EType type, int button) {
@@ -321,15 +320,14 @@ namespace TT {
         }
 	}
 
-	// TODO: We can try and do focus events but they are out of scope today; see WM_MOUSEACTIVATE, & WM_MOUSELEAVE
 	// TODO: Need to investigate WM_SYSKEYDOWN and could look into media keys
-	LRESULT __stdcall Window::windowProc(HWND__* hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	LRESULT __stdcall Window::windowProc(HWND__* hwnd, unsigned int msg, WPARAM wParam, LPARAM lParam) {
 		static unsigned char keyboard_state[256] = { 0 };
 		// This proc not only forwards the event handling to the Window class, but also repackages the data.
 		// Skip windows that we did not create.
 		auto it = dankjewelwindows.find(hwnd);
 		if (it == dankjewelwindows.end() || it->second == nullptr || it->second->eventHandler == nullptr)
-			return DefWindowProcA(hwnd, uMsg, wParam, lParam);
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 
         // Detect mouse button
         int mouse = -1;
@@ -354,9 +352,10 @@ namespace TT {
             break;
         }
 
-		switch (uMsg) {
+		switch (msg) {
 		case WM_CLOSE:
-			it->second->eventHandler(CloseEvent());
+			{ CloseEvent e; it->second->eventHandler(e); }
+			return DefWindowProcA(hwnd, msg, wParam, lParam);
 			break;
 
 		case WM_DESTROY:
@@ -456,30 +455,30 @@ namespace TT {
         case WM_MOUSEACTIVATE: {
             FocusEvent event;
             event.hasMouseFocus = 1;
-            it->second->onFocus(event);
+            it->second->eventHandler(event);
             break;
         }
         case WM_CAPTURECHANGED: {
             FocusEvent event;
             event.hasMouseFocus = 0;
-            it->second->onFocus(event);
+            it->second->eventHandler(event);
             break;
         }
         case WM_SETFOCUS: {
             FocusEvent event;
             event.hasKeyboardFocus = 1;
-            it->second->onFocus(event);
+            it->second->eventHandler(event);
             break;
         }
         case WM_KILLFOCUS: {
             FocusEvent event;
             event.hasKeyboardFocus = 0;
-            it->second->onFocus(event);
+            it->second->eventHandler(event);
             break;
         }
 
 		default:
-			return DefWindowProcA(hwnd, uMsg, wParam, lParam);
+			return DefWindowProcA(hwnd, msg, wParam, lParam);
 		}
 
 		return 1;

@@ -132,7 +132,7 @@ namespace TT {
 	class Window {
 		// the window callback can't be a bound function, so we have to track it ourselves
 		static std::unordered_map<HWND__*, Window*> dankjewelwindows;
-		static LRESULT __stdcall windowProc(HWND__* hwnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam);
+		static LRESULT __stdcall windowProc(HWND__* hwnd, unsigned int msg, WPARAM wParam, LPARAM lParam);
 
 		HWND__* window;
 		int _width;
@@ -150,7 +150,7 @@ namespace TT {
 		virtual void onWheelEvent(const WheelEvent& event) {}
 		virtual void onKeyEvent(const KeyEvent& event) {}
 		virtual void onFocusEvent(const FocusEvent& event) {}
-		virtual void onCloseEvent(const CloseEvent& event) { delete this; }
+		virtual void onCloseEvent(const CloseEvent& event) {}
 
 	public:
 		static bool hasVisibleWindows();
