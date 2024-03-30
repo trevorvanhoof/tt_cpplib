@@ -1,0 +1,262 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ThirdParty">
+      <UniqueIdentifier>{71bfee3f-93a0-4c26-a901-715f74f1f2d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ThirdParty\stb">
+      <UniqueIdentifier>{89804ca7-4b78-4a01-8a91-620920284dd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ThirdParty\fontstash">
+      <UniqueIdentifier>{39c172e5-4d59-4d1f-bb20-392938e0d58d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ThirdParty\KHR">
+      <UniqueIdentifier>{e95cf206-a632-413e-b628-3ce5091702ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\ThirdParty">
+      <UniqueIdentifier>{1bb2f77a-bf45-4bf5-b704-f813245220ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\ThirdParty\fontstash">
+      <UniqueIdentifier>{94d99f85-cb40-48a7-871c-23ae1df1efd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty">
+      <UniqueIdentifier>{7bb9fd96-850a-4362-b3b9-b4fd6a86c8ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty\fontstash">
+      <UniqueIdentifier>{33d77dbe-9d6f-493a-a147-c0018223ea2f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ThirdParty\earcut">
+      <UniqueIdentifier>{08c03081-e13e-402f-84c0-db6a4eef7931}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty\earcut">
+      <UniqueIdentifier>{caf58fbf-e706-4f65-89c1-12dabe17b4db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\rendering">
+      <UniqueIdentifier>{e9c401d4-cb0e-41c1-8fb1-82940f1041e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\rendering\gl">
+      <UniqueIdentifier>{b7cf8321-7c07-4a97-8c46-57fa80328735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{c624b772-34fe-49bc-afa6-45d496fbd5ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ThirdParty\stb">
+      <UniqueIdentifier>{11ad4c0d-2e8a-4dcb-ba63-298c19cc3078}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{a16f5493-93dc-4fa9-92db-4591bd9a001b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{a59e23d1-a968-4ad3-9de8-9f895995d94b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rendering">
+      <UniqueIdentifier>{744b26d9-04c0-46a5-831e-cdc0b7226098}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\experimental">
+      <UniqueIdentifier>{80573da8-ce24-4cda-9b68-63f109ab23c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\experimental">
+      <UniqueIdentifier>{f031448a-173e-4b0e-b3b4-e8e595416230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\deprecated">
+      <UniqueIdentifier>{02456d5e-1eeb-4a8e-b29c-16d25acaf4a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\rendering\gl">
+      <UniqueIdentifier>{15e493a7-f742-4416-bf8f-857e90aa8429}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="fontstash\fontstash.h">
+      <Filter>Header Files\ThirdParty\fontstash</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash\gl3corefontstash.h">
+      <Filter>Header Files\ThirdParty\fontstash</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash\glfontstash.h">
+      <Filter>Header Files\ThirdParty\fontstash</Filter>
+    </ClInclude>
+    <ClInclude Include="KHR\khrplatform.h">
+      <Filter>Header Files\ThirdParty\KHR</Filter>
+    </ClInclude>
+    <ClInclude Include="fontstash\stb_truetype.h">
+      <Filter>Header Files\ThirdParty\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="earcut.hpp">
+      <Filter>Header Files\ThirdParty\earcut</Filter>
+    </ClInclude>
+    <ClInclude Include="gl46corefontstash.h">
+      <Filter>Header Files\rendering\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="glext.h">
+      <Filter>Header Files\rendering\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Header Files\ThirdParty\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_cgmath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_orbit_camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_signals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_json5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_gl.h">
+      <Filter>Header Files\rendering\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_gl_handles.h">
+      <Filter>Header Files\rendering\gl</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_files.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_messages.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_strings.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_program_manager.h">
+      <Filter>Header Files\rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_render_concepts.h">
+      <Filter>Header Files\rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_ui.h">
+      <Filter>Header Files\experimental</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_components.h">
+      <Filter>Header Files\experimental</Filter>
+    </ClInclude>
+    <ClInclude Include="windont.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="tt_json.h">
+      <Filter>Header Files\deprecated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\tt_rendering\tt_rendering\spirv_reflect.h">
+      <Filter>Header Files\ThirdParty\KHR</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="fontstash\LICENSE.txt">
+      <Filter>Resource Files\ThirdParty\fontstash</Filter>
+    </Text>
+    <Text Include="fontstash\url.txt">
+      <Filter>Resource Files\ThirdParty\fontstash</Filter>
+    </Text>
+    <Text Include="eartcut_LICENSE.txt">
+      <Filter>Resource Files\ThirdParty</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="fontstash\README.md">
+      <Filter>Resource Files\ThirdParty\fontstash</Filter>
+    </None>
+    <None Include="default.vert.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="fontstash.vert.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="fontstash.frag.glsl">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="README.md">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="LICENSE">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="tt_gl_defs.inc">
+      <Filter>Header Files\rendering\gl</Filter>
+    </None>
+    <None Include="tt_gl_defs_dbg.inc">
+      <Filter>Header Files\rendering\gl</Filter>
+    </None>
+    <None Include="tt_gl_impl.inc">
+      <Filter>Header Files\rendering\gl</Filter>
+    </None>
+    <None Include="tt_gl_impl_dbg.inc">
+      <Filter>Header Files\rendering\gl</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="fontstash\fontstash.cpp">
+      <Filter>Source Files\ThirdParty\fontstash</Filter>
+    </ClCompile>
+    <ClCompile Include="earcut.cpp">
+      <Filter>Source Files\ThirdParty\earcut</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>Source Files\ThirdParty\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_cgmath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_orbit_camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_signals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_json5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_files.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_strings.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_messages.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_components.cpp">
+      <Filter>Source Files\experimental</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_ui.cpp">
+      <Filter>Source Files\experimental</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_program_manager.cpp">
+      <Filter>Source Files\rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_render_concepts.cpp">
+      <Filter>Source Files\rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_gl_handles.cpp">
+      <Filter>Source Files\rendering\gl</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_gl.cpp">
+      <Filter>Source Files\rendering\gl</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

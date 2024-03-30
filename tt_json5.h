@@ -1153,17 +1153,13 @@ namespace TTJson {
 
     ifstream_t readUtf8(const std::string& path) {
         ifstream_t stream(path);
-        // TODO: If there IS a header, and the file encoding is not utf8, will this output invalid data, error, or implicitly convert to utf8?
-        stream.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<char_t, 0x10ffff /*default*/, std::consume_header>));
+        stream.imbue(std::locale("C.UTF-8"));
         return stream;
     }
 
-    ofstream_t writeUtf8(const std::string& path, bool BOM) {
+    ofstream_t writeUtf8(const std::string& path) {
         ofstream_t stream(path);
-        if (BOM)
-            stream.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<char_t, 0x10ffff /*default*/, std::generate_header>));
-        else
-            stream.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<char_t>));
+        stream.imbue(std::locale("C.UTF-8"));
         return stream;
     }
 

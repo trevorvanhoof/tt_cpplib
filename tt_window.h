@@ -4,11 +4,68 @@ Subclass and implement the events. Note the CreateGLContext() utility function.
 
 Example windows message loop implementation:
 
+#include <windont.h>
+#include <tt_window.h>
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
 	TT::Window window;
-	window.Show();
+	window.show();
 	MSG msg;
 	bool quit = false;
+
+	do {
+		while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) {
+				quit = true;
+				break;
+			}
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+		// Detect when all windows are closed and exit this loop.
+		if (!TT::Window::hasVisibleWindows())
+			PostQuitMessage(0);
+	} while (!quit);
+	return (int)msg.wParam;
+}
+
+For rendering with OpenGL, you may choose to use this instead:
+
+#include <windont.h>
+#include <tt_window.h>
+#include <tt_gl.h>
+
+class App : public TT::Window {
+public:
+	App() : TT::Window() {
+		createGLContext();
+		TT::loadGLFunctions();
+		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+		show();
+	}
+
+private:
+	void onResizeEvent(const TT::ResizeEvent& event) override {
+		glViewport(0, 0, event.width, event.height);
+	}
+
+	void onPaintEvent(const TT::PaintEvent& event) override {
+		glClear(GL_COLOR_BUFFER_BIT);
+		SwapBuffers(getGLContext());
+	}
+};
+
+int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd) {
+	App window;
+	MSG msg;
+	bool quit = false;
+
+	// Track frame timings
+	ULONGLONG a = GetTickCount64();
+	ULONGLONG b;
+	constexpr ULONGLONG FPS = 30;
+	constexpr ULONGLONG t = 1000 / FPS;
+
 	do {
 		while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
 			if (msg.message == WM_QUIT) {
@@ -19,11 +76,16 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 			DispatchMessage(&msg);
 		}
 		// Force UI repaints as fast as possible
-		// TT::PaintEvent event;
-		// window.HandleEvent(event);
+		window.repaint();
 		// Detect when all windows are closed and exit this loop.
-		if (!TT::Window::HasVisibleWindows())
+		if (!TT::Window::hasVisibleWindows())
 			PostQuitMessage(0);
+
+		// Sleep for remaining frame time
+		b = a;
+		a = GetTickCount64();
+		b = a - b;
+		if (b < t) Sleep((DWORD)(t - b));
 	} while (!quit);
 	return (int)msg.wParam;
 }
@@ -134,13 +196,14 @@ namespace TT {
 		static std::unordered_map<HWND__*, Window*> dankjewelwindows;
 		static LRESULT __stdcall windowProc(HWND__* hwnd, unsigned int msg, WPARAM wParam, LPARAM lParam);
 
-		HWND__* window;
 		int _width;
 		int _height;
 
 		void handleEvent(const Event& event);
 
 	protected:
+		HWND__* window;
+
 		bool enableMouseTracking = false;
 		unsigned int mouseButtonStates = 0;
 
@@ -165,6 +228,6 @@ namespace TT {
 
 		std::function<void(Event&)> eventHandler; // Uses Window::handlEvent() by default.
 		HDC__* getGLContext() const;
-		HDC__* createGLContext() const;
+		static HDC__* createGLContext(HWND__* window);
 	};
 }

@@ -7,19 +7,13 @@ namespace TT {
 		float C = -(far + near) / (far - near);
 		float D = -(2.0f * far * near) / (far - near);
 		return { 
-			(2.0f * near) / (right - left), 
-			0,
-			A,
-			0,
-			
-			0,
-			-(2.0f * near) / (top - bottom),
-			B,
-			0, 
-
-			0, 0, C, -1, 0, 0, D, 0 };
+			(2.0f * near) / (right - left), 0, A, 0,
+			0, -(2.0f * near) / (top - bottom), B, 0,
+			0, 0, C, -1,
+			0, 0, D, 0
+		};
 	}
-
+	
 	Mat44 Mat44::perspectiveY(float fovRadians, float aspect, float near, float far) {
 		float fH = tanf(fovRadians * 0.5f) * near;
 		float fW = fH * aspect;

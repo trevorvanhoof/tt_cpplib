@@ -10,11 +10,13 @@ namespace TT {
 	template<> T floor(T a) { return _mm_floor_ps(a); } \
 	template<> T ceil(T a) { return _mm_ceil_ps(a); } \
 	template<> T mod(T a, T b) { return Vec(a) % b; }
+
 	SPECIAL(__m128)
-		SPECIAL(Vec)
-		SPECIAL(Vec2)
-		SPECIAL(Vec3)
-		SPECIAL(Vec4)
+	SPECIAL(Vec)
+	SPECIAL(Vec2)
+	SPECIAL(Vec3)
+	SPECIAL(Vec4)
+
 #undef SPECIAL
 
 	template<> float mod(float a, float b) {
@@ -25,4 +27,7 @@ namespace TT {
 		return a - b * std::floor(a / b);
 	}
 
+	size_t hash_combine(size_t a, size_t b) {
+		return a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2));
+	}
 }

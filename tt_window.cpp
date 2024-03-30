@@ -103,7 +103,7 @@ namespace TT {
 		}
 	}
 
-	HDC Window::createGLContext() const {
+	HDC Window::createGLContext(HWND window) {
 #if 0
 		HDC device = GetDC(window);
 		const PIXELFORMATDESCRIPTOR pfd = { sizeof(PIXELFORMATDESCRIPTOR), 1, PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0 };
