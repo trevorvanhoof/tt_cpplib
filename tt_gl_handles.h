@@ -45,6 +45,7 @@ namespace TT {
 		void clamp() const;
 		void bind() const;
 	};
+
 	struct RenderTarget {
 	private:
 		unsigned int width = 0;

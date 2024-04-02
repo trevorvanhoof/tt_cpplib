@@ -13,7 +13,7 @@ namespace TT {
 
 #ifdef TT_GL_DBG
 #include "tt_gl_defs_dbg.inc"
-#define TT_GL_DBG_ERR checkGLErrors();
+#define TT_GL_DBG_ERR TT::checkGLErrors();
 #else
 #include "tt_gl_defs.inc"
 #define TT_GL_DBG_ERR

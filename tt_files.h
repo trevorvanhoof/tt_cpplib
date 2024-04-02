@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <unordered_set>
 
 namespace TT {
 	std::string readAllBytes(const ConstStringView& filename);
@@ -30,4 +31,14 @@ namespace TT {
 	private:
 		std::FILE* fp;
     };
+
+	// Read a file, look for #include statements, can deal with c-style comments but not with other macros.
+	std::string readWithIncludes(const std::string& filePath);
+
+	// This more complicated version exposes a lot of the internal logic for use in file watching.
+	std::string readWithIncludes(
+		const std::string& filePath, // file to load
+		std::unordered_set<std::string>& outDependencies, // filePath needs these file paths to get fully loaded; including self
+		std::unordered_map<std::string, std::string>& cache, // avoid reading the same file twice, e.g. when it gets included in multiple places
+		std::unordered_map<std::string, std::vector<std::string>>& fileDependents); // for each file, track which files rely on this file
 }

@@ -115,6 +115,7 @@ namespace TT {
 		Mat44 operator*(const Mat44& b) const;
 		Vec4 operator*(const Vec4& b) const;
 		static Mat44 frustum(float left, float right, float top, float bottom, float near, float far);
+		static Mat44 orthoSymmetric(float width, float height, float near, float far);
 		static Mat44 perspectiveY(float fovRadians, float aspect, float near, float far);
 		static Mat44 translate(float x, float y, float z);
 		static Mat44 scale(float x, float y, float z);

@@ -49,7 +49,6 @@ namespace TT {
 
 		GLenum glElementType();
 		int elementSizeInBytes();
-
 	};
 
 	struct InstanceBuffer : public Buffer {

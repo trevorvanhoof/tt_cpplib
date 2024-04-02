@@ -54,5 +54,5 @@ namespace TT {
 	template<> float mod(float a, float b);
 	template<> double mod(double a, double b);
 
-	size_t hash_combine(size_t a, size_t b);
+	size_t hashCombine(size_t a, size_t b);
 }

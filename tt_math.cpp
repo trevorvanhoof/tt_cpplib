@@ -3,6 +3,7 @@
 #include <cmath>
 
 namespace TT {
+
 #define SPECIAL(T) \
 	template<> T clamp(T v, T n, T x) { return _mm_max_ps(_mm_min_ps(v, x), n); } \
 	template<> T min(T a, T b) { return _mm_min_ps(a, b); } \
@@ -27,7 +28,7 @@ namespace TT {
 		return a - b * std::floor(a / b);
 	}
 
-	size_t hash_combine(size_t a, size_t b) {
+	size_t hashCombine(size_t a, size_t b) {
 		return a ^ (b + 0x9e3779b9 + (a << 6) + (a >> 2));
 	}
 }

@@ -82,8 +82,8 @@ namespace TT {
 		glTexParameteri(anchor, GL_TEXTURE_WRAP_S, GL_REPEAT); TT_GL_DBG_ERR;
 		glTexParameteri(anchor, GL_TEXTURE_WRAP_T, GL_REPEAT); TT_GL_DBG_ERR;
 		glTexParameteri(anchor, GL_TEXTURE_WRAP_R, GL_REPEAT); TT_GL_DBG_ERR;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); TT_GL_DBG_ERR;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); TT_GL_DBG_ERR;
+		glTexParameteri(anchor, GL_TEXTURE_MIN_FILTER, GL_LINEAR); TT_GL_DBG_ERR;
+		glTexParameteri(anchor, GL_TEXTURE_MAG_FILTER, GL_LINEAR); TT_GL_DBG_ERR;
 		glBindTexture(anchor, 0); TT_GL_DBG_ERR;
 	}
 
