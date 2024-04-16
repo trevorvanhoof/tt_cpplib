@@ -1,20 +1,33 @@
 #include "tt_messages.h"
 #include "windont.h"
 #include <cstdio>
+#include <corecrt_wstdio.h>
 
 namespace {
-	// Caller owns the return value
-	char* _formatStr(const TT::ConstStringView& fmt, va_list args) {
-		size_t size;
+    // Caller owns the return value
+    char* _formatStr(const TT::ConstStringView& fmt, va_list args) {
+        size_t size;
 #pragma warning(suppress:28719)    // 28719
-		size = vsnprintf(nullptr, 0, fmt.start, args);
+        size = vsnprintf(nullptr, 0, fmt.start, args);
 
-		char* message = new char[size + 1u];
-		vsnprintf(message, size + 1u, fmt.start, args);
-		message[size] = '\0';
+        char* message = new char[size + 1u];
+        vsnprintf(message, size + 1u, fmt.start, args);
+        message[size] = '\0';
 
-		return message;
-	}
+        return message;
+    }
+
+    wchar_t* _formatStr(const TT::ConstWStringView& fmt, va_list args) {
+        size_t size;
+#pragma warning(suppress:4996)    // 28719
+        size = _vsnwprintf(nullptr, 0, fmt.start, args);
+
+        wchar_t* message = new wchar_t[size + 1u];
+        _vsnwprintf_s(message, size + 1u, size + 1u, fmt.start, args);
+        message[size] = '\0';
+
+        return message;
+    }
 
 	void _message(const TT::ConstStringView& title, unsigned int flags, const TT::ConstStringView& fmt, va_list args) {
 		const char* message = _formatStr(fmt, args);
@@ -30,13 +43,22 @@ namespace {
 
 namespace TT {
 	// Caller owns the return value
-	char* formatStr(ConstStringView fmt, ...) {
-		va_list args;
-		__crt_va_start(args, fmt);
-		char* message = _formatStr(fmt, args);
-		__crt_va_end(args);
-		return message;
-	}
+    char* formatStr(ConstStringView fmt, ...) {
+        va_list args;
+        __crt_va_start(args, fmt);
+        char* message = _formatStr(fmt, args);
+        __crt_va_end(args);
+        return message;
+    }
+
+    // Caller owns the return value
+    wchar_t* formatStr(ConstWStringView fmt, ...) {
+        va_list args;
+        __crt_va_start(args, fmt);
+        wchar_t* message = _formatStr(fmt, args);
+        __crt_va_end(args);
+        return message;
+    }
 
 	void info(ConstStringView fmt, ...) {
 		va_list args;

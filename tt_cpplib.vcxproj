@@ -133,28 +133,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\tt_rendering\tt_rendering\spirv_reflect.h" />
     <ClInclude Include="earcut.hpp" />
-    <ClInclude Include="fontstash\fontstash.h" />
-    <ClInclude Include="fontstash\gl3corefontstash.h" />
-    <ClInclude Include="fontstash\glfontstash.h" />
-    <ClInclude Include="fontstash\stb_truetype.h" />
-    <ClInclude Include="gl46corefontstash.h" />
-    <ClInclude Include="glext.h" />
-    <ClInclude Include="KHR\khrplatform.h" />
-    <ClInclude Include="stb_image.h" />
     <ClInclude Include="tt_cgmath.h" />
     <ClInclude Include="tt_components.h" />
     <ClInclude Include="tt_files.h" />
-    <ClInclude Include="tt_gl.h" />
-    <ClInclude Include="tt_gl_handles.h" />
     <ClInclude Include="tt_json.h" />
     <ClInclude Include="tt_json5.h" />
     <ClInclude Include="tt_math.h" />
     <ClInclude Include="tt_messages.h" />
     <ClInclude Include="tt_orbit_camera.h" />
-    <ClInclude Include="tt_program_manager.h" />
-    <ClInclude Include="tt_render_concepts.h" />
     <ClInclude Include="tt_signals.h" />
     <ClInclude Include="tt_strings.h" />
     <ClInclude Include="tt_ui.h" />
@@ -163,39 +150,29 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="eartcut_LICENSE.txt" />
-    <Text Include="fontstash\LICENSE.txt" />
-    <Text Include="fontstash\url.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="default.vert.glsl" />
-    <None Include="fontstash.frag.glsl" />
-    <None Include="fontstash.vert.glsl" />
-    <None Include="fontstash\README.md" />
     <None Include="LICENSE" />
     <None Include="README.md" />
-    <None Include="tt_gl_defs.inc" />
-    <None Include="tt_gl_defs_dbg.inc" />
-    <None Include="tt_gl_impl.inc" />
-    <None Include="tt_gl_impl_dbg.inc" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="earcut.cpp" />
-    <ClCompile Include="fontstash\fontstash.cpp" />
-    <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="tt_cgmath.cpp" />
-    <ClCompile Include="tt_components.cpp" />
+    <ClCompile Include="tt_components.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="tt_files.cpp" />
-    <ClCompile Include="tt_gl.cpp" />
-    <ClCompile Include="tt_gl_handles.cpp" />
     <ClCompile Include="tt_json5.cpp" />
     <ClCompile Include="tt_math.cpp" />
     <ClCompile Include="tt_messages.cpp" />
     <ClCompile Include="tt_orbit_camera.cpp" />
-    <ClCompile Include="tt_program_manager.cpp" />
-    <ClCompile Include="tt_render_concepts.cpp" />
     <ClCompile Include="tt_signals.cpp" />
     <ClCompile Include="tt_strings.cpp" />
-    <ClCompile Include="tt_ui.cpp" />
+    <ClCompile Include="tt_ui.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="tt_window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
