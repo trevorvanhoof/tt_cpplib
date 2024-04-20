@@ -22,8 +22,6 @@ namespace TT {
 		dankjewelwindows[window] = this;
 
 		eventHandler = std::bind(&Window::handleEvent, this, std::placeholders::_1);
-		// CreateGLContext();
-		// Show();
 	}
 
 	Window::~Window() {
@@ -160,7 +158,7 @@ namespace TT {
 
             // Build the event.
             KeyEvent event;
-            event.isRepeat = (bool)(lParam & 0xF);
+            event.isRepeat = (bool)(lParam & (1 << 30));
             event.key = (UINT)wParam;
             event.txt = buffer;
             event.type = isKeyDown ? Event::EType::KeyDown : Event::EType::KeyUp;
@@ -195,10 +193,12 @@ namespace TT {
         case WM_LBUTTONDBLCLK:
         case WM_LBUTTONUP:
             mouse = 0;
+            break;
         case WM_RBUTTONDOWN:
         case WM_RBUTTONDBLCLK:
         case WM_RBUTTONUP:
             mouse = 1;
+            break;
         case WM_MBUTTONDOWN:
         case WM_MBUTTONDBLCLK:
         case WM_MBUTTONUP:
@@ -214,7 +214,7 @@ namespace TT {
 		switch (msg) {
 		case WM_CLOSE:
 			{ CloseEvent e; it->second->eventHandler(e); }
-			return DefWindowProcA(hwnd, msg, wParam, lParam);
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 			break;
 
 		case WM_DESTROY:
@@ -260,14 +260,16 @@ namespace TT {
 			break;
 		}
 
-		case WM_KEYDOWN:
-		case WM_SYSKEYDOWN: {
+        case WM_SYSKEYDOWN:
+            if(lParam & (1 << 29)) { LRESULT result = DefWindowProcA(hwnd, msg, wParam, lParam); if(result) return result; }
+		case WM_KEYDOWN: {
             auto event = createKeyEvent(wParam, lParam, true);
 			it->second->eventHandler(event);
 			break;
 		}
-		case WM_KEYUP:
-		case WM_SYSKEYUP: {
+		case WM_SYSKEYUP:
+            if(lParam & (1 << 29)) { LRESULT result = DefWindowProcA(hwnd, msg, wParam, lParam); if(result) return result; }
+		case WM_KEYUP: {
             auto event = createKeyEvent(wParam, lParam, false);
 			it->second->eventHandler(event);
 			break;
@@ -335,19 +337,10 @@ namespace TT {
             it->second->eventHandler(event);
             break;
         }
-
-            break;
-
+        
 		default:
-			return DefWindowProcA(hwnd, msg, wParam, lParam);
+			return DefWindowProc(hwnd, msg, wParam, lParam);
 		}
-
-        // TODO: Fix F11 & ALT+Enter not working, make sure we position back to where it was when min and maximizing.
-        // TODO: Option to make F11 go to borderless fullscreen?
-        // TODO: Toggle fullscreen function.
-        // TODO: Fullscreen on startup flag.
-        // TODO: Figure out which events need this, it fixes ALT+F4 not working at least.
-        DefWindowProcA(hwnd, msg, wParam, lParam);
 
 		return 1;
 	}
