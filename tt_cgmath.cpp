@@ -379,7 +379,7 @@ struct TestMatricesScope {
 void testMatrices() {
 	Window window;
 	window.CreateGLContext();
-	LoadGLFunctions();
+	loadGLFunctions();
 
 	{
 		TestMatricesScope t;

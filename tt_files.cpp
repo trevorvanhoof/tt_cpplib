@@ -20,7 +20,7 @@ namespace TT {
             std::fclose(fp);
             return contents;
         }   
-        error("Failed to open file for reading: '%s.'", filename);
+        error("Failed to open file for reading: '%s.'", filename.start);
         return "";
     }
 
@@ -109,21 +109,18 @@ namespace TT {
         return contents;
     }
 
-    unsigned int BinaryReader::u32() const {
-        unsigned int result;
-        TT::assert(sizeof(unsigned int) == std::fread((char*)&result, 1, sizeof(unsigned int), fp));
-        return result;
-    }
+    unsigned char BinaryReader::u8() const { return read<unsigned char>(); }
+    unsigned short BinaryReader::u16() const { return read<unsigned short>(); }
+    unsigned int BinaryReader::u32() const { return read<unsigned int>(); }
+    unsigned long long BinaryReader::u64() const { return read<unsigned long long>(); }
 
-    int BinaryReader::i32() const {
-        int result;
-        TT::assert(sizeof(int) == std::fread((char*)&result, 1, sizeof(int), fp));
-        return result;
-    }
-
-    std::string BinaryReader::str() const {
-        return read(u32());
-    }
+    char BinaryReader::i8() const { return read<char>(); }
+    short BinaryReader::i16() const { return read<short>(); }
+    int BinaryReader::i32() const { return read<int>(); }
+    long long BinaryReader::i64() const { return read<long long>(); }
+    
+    float BinaryReader::f32() const { return read<float>(); }
+    double BinaryReader::f64() const { return read<double>(); }
 
     std::string readWithIncludes(const std::string& filePath) {
         std::unordered_set<std::string> outDependencies;

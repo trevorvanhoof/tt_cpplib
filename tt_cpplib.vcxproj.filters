@@ -87,6 +87,9 @@
     <ClInclude Include="tt_json.h">
       <Filter>Header Files\deprecated</Filter>
     </ClInclude>
+    <ClInclude Include="tt_numerictypes.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="eartcut_LICENSE.txt">

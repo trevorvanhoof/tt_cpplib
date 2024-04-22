@@ -1,7 +1,10 @@
 #pragma once
 
+#include "tt_strings.h"
+#include "tt_messages.h"
 #include <string>
 #include <unordered_set>
+#include <intrin.h>
 
 namespace TT {
 	std::string readAllBytes(const ConstStringView& filename);
@@ -19,14 +22,54 @@ namespace TT {
 		// Reads given nr of bytes and returns resulting string,
 		// string will be truncated if fewer bytes were available.
 		std::string read(size_t size) const;
-		// Read 4 bytes and return as u32.
+
+        bool swapEndianness = false;
+
+        template<typename T> T read() const {
+            T result;
+            TT::assert(sizeof(T) == std::fread((char*)&result, 1, sizeof(T), fp));
+            if(!swapEndianness)
+                return result;
+            switch(sizeof(T)) {
+            case 2:
+                {
+                    unsigned short tmp = _byteswap_ushort(*reinterpret_cast<unsigned short*>(&result));
+                    result = *reinterpret_cast<T*>(&tmp);
+                }
+                break;
+            case 4:
+                {
+                    unsigned int tmp = _byteswap_ulong(*reinterpret_cast<unsigned int*>(&result));
+                    result = *reinterpret_cast<T*>(&tmp);
+                }
+                break;
+            case 8:
+                {
+                    unsigned long long tmp = _byteswap_uint64(*reinterpret_cast<unsigned long long*>(&result));
+                    result = *reinterpret_cast<T*>(&tmp);
+                }
+                break;
+            }
+            return result;
+        }
+
+        unsigned char u8() const;
+        unsigned short u16() const;
         unsigned int u32() const;
-		// Read 4 bytes and return as i32.
+        unsigned long long u64() const;
+
+        char i8() const;
+        short i16() const;
         int i32() const;
-		// Read 4 bytes and return as f32.
+        long long i64() const;
+
         float f32() const;
-		// Read a u32 size and then that many bytes into a string.
-        std::string str() const;
+        double f64() const;
+
+		// Read a size and then that many bytes into a string. T must be one of u8, u16, u32, u64.
+        template<typename T> std::string str() const {
+            return read(read<T>());
+        }
 
 	private:
 		std::FILE* fp;

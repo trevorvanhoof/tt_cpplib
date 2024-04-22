@@ -141,6 +141,7 @@
     <ClInclude Include="tt_json5.h" />
     <ClInclude Include="tt_math.h" />
     <ClInclude Include="tt_messages.h" />
+    <ClInclude Include="tt_numerictypes.h" />
     <ClInclude Include="tt_orbit_camera.h" />
     <ClInclude Include="tt_signals.h" />
     <ClInclude Include="tt_strings.h" />
