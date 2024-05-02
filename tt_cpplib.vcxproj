@@ -112,6 +112,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>Rpcrt4.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -137,6 +140,7 @@
     <ClInclude Include="tt_cgmath.h" />
     <ClInclude Include="tt_components.h" />
     <ClInclude Include="tt_files.h" />
+    <ClInclude Include="tt_uuid.h" />
     <ClInclude Include="tt_json.h" />
     <ClInclude Include="tt_json5.h" />
     <ClInclude Include="tt_math.h" />
@@ -164,6 +168,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="tt_files.cpp" />
+    <ClCompile Include="tt_uuid.cpp" />
     <ClCompile Include="tt_json5.cpp" />
     <ClCompile Include="tt_math.cpp" />
     <ClCompile Include="tt_messages.cpp" />

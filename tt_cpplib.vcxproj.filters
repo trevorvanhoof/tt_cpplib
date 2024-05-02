@@ -90,6 +90,9 @@
     <ClInclude Include="tt_numerictypes.h">
       <Filter>Header Files\core</Filter>
     </ClInclude>
+    <ClInclude Include="tt_uuid.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="eartcut_LICENSE.txt">
@@ -140,6 +143,9 @@
     </ClCompile>
     <ClCompile Include="tt_components.cpp">
       <Filter>Source Files\experimental</Filter>
+    </ClCompile>
+    <ClCompile Include="tt_uuid.cpp">
+      <Filter>Source Files\core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

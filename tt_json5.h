@@ -59,14 +59,8 @@ SOFTWARE.
 #include <codecvt>
 #include <functional>
 #include <unordered_map>
-
-// Options:
-// Use wchar_t and std::wstring.
-// #define TT_JSON5_USE_WSTR
-// Use 128 bit scalars.
-// #define TT_JSON5_LONG_DOUBLE
-// Use 32 bit scalars.
-// #define TT_JSON5_NO_DOUBLE
+#include "windont.h"
+#include <stringapiset.h>
 
 #ifndef TT_JSON5_NO_JSON5
 // Individual JSON5 features (turning them all off reverts this to a strict JSON compliant parser):
@@ -153,12 +147,16 @@ namespace TTJson {
 
     class Array : public std::vector<Value> {
     public:
+        using vector::vector;
+
         Value& operator[](size_t index);
         const Value& operator[](size_t index) const;
     };
 
     class Object : public std::unordered_map<str_t, Value> {
     public:
+        using unordered_map::unordered_map;
+
         Value& get(const str_t& key);
         const Value& get(const str_t& key) const;
     };
@@ -197,6 +195,7 @@ namespace TTJson {
         const str_t& asString() const;
         const Array& asArray() const;
         const Object& asObject() const;
+        bool isNull() const;
 
         bool& asBool();
         long long& asInt();
@@ -256,7 +255,7 @@ namespace TTJson {
 
     // Utilities to open fstreams with utf8 encoding.
     ifstream_t readUtf8(const std::string& path);
-    ofstream_t writeUtf8(const std::string & path, bool BOM = false);
+    ofstream_t writeUtf8(const std::string & path);
 
     void serialize(const Value& value, ostream_t& out, const char_t* tab = nullptr, int depth = 0);
 }
@@ -279,12 +278,17 @@ namespace TTJson {
     }
 #else
     str_t makeString(const wchar_t* c) {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
-        return utf8_conv.to_bytes(c);
+        size_t sz = wcslen(c);
+        str_t r;
+        r.resize(sz * 4, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, c, (int)sz, r.data(), (int)r.size(), nullptr, nullptr);
+        return r;
     }
     str_t makeString(wchar_t c) {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
-        return utf8_conv.to_bytes(c);
+        str_t r;
+        r.resize(4, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, &c, 1, r.data(), (int)r.size(), nullptr, nullptr);
+        return r;
     }
 #endif
     str_t makeString(const char_t* c) {
@@ -338,6 +342,7 @@ namespace TTJson {
     const str_t& Value::asString() const { if (type != ValueType::String && castErrorHandler != nullptr) castErrorHandler(); return sValue; }
     const Array& Value::asArray() const { if (type != ValueType::Array && castErrorHandler != nullptr) castErrorHandler(); return aValue; }
     const Object& Value::asObject() const { if (type != ValueType::Object && castErrorHandler != nullptr) castErrorHandler(); return oValue; }
+    bool Value::isNull() const { return type == ValueType::Null; }
 
     bool& Value::asBool() { if (type != ValueType::Bool && castErrorHandler != nullptr) castErrorHandler(); return bValue; }
     long long& Value::asInt() { if (type != ValueType::Int && castErrorHandler != nullptr) castErrorHandler(); return iValue; }
@@ -578,9 +583,10 @@ namespace TTJson {
 #ifdef TT_JSON5_USE_WSTR
         dst << *reinterpret_cast<wchar_t*>(&codePoint);
 #else
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
-        wchar_t chr = codePoint;
-        dst << utf8_conv.to_bytes(chr);
+        static char buf[5];
+        memset(buf, 0, sizeof(buf));
+        WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(&codePoint), 1, buf, sizeof(buf), nullptr, nullptr);
+        dst << buf;
 #endif
     }
 
@@ -628,7 +634,7 @@ namespace TTJson {
                 for (int i = 0; i < 2; ++i) {
                     int value = readHexChar(stream);
                     if (value == -1) {
-                        throwParseError(makeString("Invalid unicode escape code, expected 4 hexadecimal digits, not ") + peek1(stream) + makeString('.'));
+                        throwParseError(makeString("Invalid hex escape code, expected 2 hexadecimal digits, not ") + peek1(stream) + makeString('.'));
                         return {};
                     }
                     codePoint <<= 4;
