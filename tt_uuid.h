@@ -12,6 +12,7 @@ namespace TT {
         unsigned char  Data4[ 8 ];
 
         UUID();
+        static UUID generate();
         UUID(const char* str);
         operator std::string() const;
 
