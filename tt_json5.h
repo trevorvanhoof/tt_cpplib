@@ -195,7 +195,6 @@ namespace TTJson {
         const str_t& asString() const;
         const Array& asArray() const;
         const Object& asObject() const;
-        bool isNull() const;
 
         bool& asBool();
         long long& asInt();
@@ -203,6 +202,14 @@ namespace TTJson {
         str_t& asString();
         Array& asArray();
         Object& asObject();
+
+        bool isNull() const;
+        bool isBool() const;
+        bool isInt() const;
+        bool isDouble() const;
+        bool isString() const;
+        bool isArray() const;
+        bool isObject() const;
     };
 
     class Parser {
@@ -342,7 +349,6 @@ namespace TTJson {
     const str_t& Value::asString() const { if (type != ValueType::String && castErrorHandler != nullptr) castErrorHandler(); return sValue; }
     const Array& Value::asArray() const { if (type != ValueType::Array && castErrorHandler != nullptr) castErrorHandler(); return aValue; }
     const Object& Value::asObject() const { if (type != ValueType::Object && castErrorHandler != nullptr) castErrorHandler(); return oValue; }
-    bool Value::isNull() const { return type == ValueType::Null; }
 
     bool& Value::asBool() { if (type != ValueType::Bool && castErrorHandler != nullptr) castErrorHandler(); return bValue; }
     long long& Value::asInt() { if (type != ValueType::Int && castErrorHandler != nullptr) castErrorHandler(); return iValue; }
@@ -350,6 +356,14 @@ namespace TTJson {
     str_t& Value::asString() { if (type != ValueType::String && castErrorHandler != nullptr) castErrorHandler(); return sValue; }
     Array& Value::asArray() { if (type != ValueType::Array && castErrorHandler != nullptr) castErrorHandler(); return aValue; }
     Object& Value::asObject() { if (type != ValueType::Object && castErrorHandler != nullptr) castErrorHandler(); return oValue; }
+
+    bool Value::isNull() const { return type == ValueType::Null; }
+    bool Value::isBool() const { return type == ValueType::Bool; }
+    bool Value::isInt() const { return type == ValueType::Int; }
+    bool Value::isDouble() const { return type == ValueType::Double; }
+    bool Value::isString() const { return type == ValueType::String; }
+    bool Value::isArray() const { return type == ValueType::Array; }
+    bool Value::isObject() const { return type == ValueType::Object; }
 
     inline void Parser::clearError() {
         parseError.clear();
