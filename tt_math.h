@@ -6,15 +6,15 @@
 
 namespace TT {
 	template<typename T> T clamp(T v, T n, T x) {
-		return std::clamp(v, n, x);
+		return v < n ? n : (v > x ? x : v);
 	}
 
 	template<typename T> T min(T a, T b) {
-		return std::min(a, b);
+		return a < b ? a : b;
 	}
 
 	template<typename T> T max(T a, T b) {
-		return std::max(a, b);
+		return a > b ? a : b;
 	}
 
 	template<typename T> T mod(T a, T b) {
