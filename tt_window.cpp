@@ -118,7 +118,7 @@ namespace TT {
             // Translate the key into unicode characters typed.
             wchar_t buffer[16] = { 0 };
             if (GetKeyboardState(keyboardState)) {
-                // TODO: If ToUnicodeEx writes more chars than fit the bfufer
+                // TODO: If ToUnicodeEx writes more chars than fit the buffer
                 // we will be writing out of bounds here. Check this, and preferably
                 // figure out the max wbuffer size required.
                 buffer[ToUnicodeEx(
@@ -177,7 +177,6 @@ namespace TT {
         }
 	}
 
-	// TODO: Need to investigate WM_SYSKEYDOWN and could look into media keys
 	LRESULT __stdcall Window::windowProc(HWND__* hwnd, unsigned int msg, WPARAM wParam, LPARAM lParam) {
 		static unsigned char keyboard_state[256] = { 0 };
 		// This proc not only forwards the event handling to the Window class, but also repackages the data.

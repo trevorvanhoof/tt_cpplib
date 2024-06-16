@@ -233,9 +233,6 @@ namespace TT {
 
 		std::function<void(Event&)> eventHandler; // Uses Window::handlEvent() by default.
 
-		// TODO: This should be moved to the rendering implementation
-		// HDC__* getGLContext() const;
-		// HDC__* createGLContext() const;
 		HWND__* windowHandle() const;
 	};
 }
