@@ -159,6 +159,14 @@ namespace TTJson {
 
         Value& get(const str_t& key);
         const Value& get(const str_t& key) const;
+
+        const Value* tryGet(const str_t& key) const;
+        const bool* tryGetBool(const str_t& key) const;
+        const long long* tryGetInt(const str_t& key) const;
+        const double* tryGetDouble(const str_t& key) const;
+        const str_t* tryGetString(const str_t& key) const;
+        const Array* tryGetArray(const str_t& key) const;
+        const Object* tryGetObject(const str_t& key) const;
     };
 
     class Value {
@@ -331,6 +339,48 @@ namespace TTJson {
         return it->second;
     }
 
+    const Value* Object::tryGet(const str_t& key) const {
+        auto it = find(key);
+        if (it != end()) return &it->second;
+        return nullptr;
+    }
+
+    const bool* Object::tryGetBool(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isBool()) return &value->asBool();
+        return nullptr;
+    }
+
+    const long long* Object::tryGetInt(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isInt()) return &value->asInt();
+        return nullptr;
+    }
+
+    const double* Object::tryGetDouble(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isDouble()) return &value->asDouble();
+        return nullptr;
+    }
+
+    const str_t* Object::tryGetString(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isString()) return &value->asString();
+        return nullptr;
+    }
+
+    const Array* Object::tryGetArray(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isArray()) return &value->asArray();
+        return nullptr;
+    }
+
+    const Object* Object::tryGetObject(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isObject()) return &value->asObject();
+        return nullptr;
+    }
+
     Value::errorFunc Value::castErrorHandler = nullptr;
 
     Value::Value(ValueType type) : type(type) {}
@@ -412,21 +462,11 @@ namespace TTJson {
         return result;
     }
 
-    // Work around unget() as it seems to error out in the empty array test case,
-    // even though we just read the second character of the file and repeatedly
-    // read and unget the first character of the file succesfully already...
-    // TODO: There is still 1 usage of unget in here
-    // when looking for keywords, as that needs to rewind
-    // by more than 1 char.
-#define NO_UNGET
-
     char_t Parser::read1(istream_t& stream) {
-#ifdef NO_UNGET
         if (rewind) {
             rewind = false;
             return lastChr;
         }
-#endif
 
         stream.read(&lastChr, 1);
 
@@ -451,32 +491,11 @@ namespace TTJson {
         return lastChr;
     }
 
-#ifndef NO_UNGET
-    void Parser::rewind1(istream_t& stream) {
-        if (errorCode != 0)
-            return;
-        stream.unget();
-        --cursor;
-        if (lastChr == '\n') {
-            --lineNumber;
-            columnNumber = prevColumnNumber;
-        }
-        if (!stream.good()) {
-            throwRewindError();
-            return;
-        }
-    }
-#else
     void Parser::rewind1(istream_t& stream) {
         if (rewind)
             throwRewindError();
         rewind = true;
     }
-#endif
-
-#ifdef NO_UNGET
-#undef NO_UNGET
-#endif
 
 #if defined(TT_JSON5_SUPPORT_BLOCK_COMMENTS) || defined(TT_JSON5_SUPPORT_SINGLE_LINE_COMMENTS)
     bool Parser::skipComments(istream_t& stream, char_t& b) {
@@ -579,6 +598,7 @@ namespace TTJson {
             if (chr != word[i]) {
                 if (rewindOnFail) {
                     while (i) {
+                        // TODO: The empty array test case broke on unget so I no longer trust it. Can we work around this?
                         stream.unget();
                         --i;
                     }
