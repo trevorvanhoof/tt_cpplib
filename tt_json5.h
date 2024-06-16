@@ -263,8 +263,8 @@ namespace TTJson {
         void parseValue(istream_t& stream, Value& result);
 
     public:
-        inline bool hasError();
-        inline str_t error();
+        bool hasError();
+        str_t error();
         void parse(istream_t& stream, Value& result);
     };
 
@@ -1105,11 +1105,11 @@ namespace TTJson {
         skipWhitespace(stream);
     }
 
-    inline bool Parser::hasError() {
+    bool Parser::hasError() {
         return errorCode != 0;
     }
 
-    inline str_t Parser::error() {
+    str_t Parser::error() {
         str_t result{};
         switch (errorCode) {
         case 1:
