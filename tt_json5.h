@@ -1162,7 +1162,7 @@ namespace TTJson {
         void indent(ostream_t& out, const char_t* tab, int depth) {
             if (!tab) return;
             for (int i = 0; i < depth; ++i)
-                out << tab;
+                out << *tab;
         }
 
         void newLine(ostream_t& out, const char_t* tab) {
@@ -1214,7 +1214,7 @@ namespace TTJson {
                         indent(out, tab, depth + 1);
                     serialize(*e, out, tab, depth + 1);
                     if (std::next(e) != value.aValue.end())
-                        out << ', ';
+                        out << ',';
                     if (mode)
                         newLine(out, tab);
                 }
