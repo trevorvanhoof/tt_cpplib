@@ -1,4 +1,9 @@
 /*
+TODO: Window bugs and missing features: 
+- can't press ALT+Enter to toggle minimize / maximize, 
+- can't see the cursor change when trying to resize,
+- can't toggle fullscreen mode with F11
+
 A Window class that receives messages in a slightly higher level format.
 Subclass and implement the events. Note the CreateGLContext() utility function.
 
@@ -228,9 +233,6 @@ namespace TT {
 
 		std::function<void(Event&)> eventHandler; // Uses Window::handlEvent() by default.
 
-		// TODO: This should be moved to the rendering implementation
-		HDC__* getGLContext() const;
-		HDC__* createGLContext() const;
 		HWND__* windowHandle() const;
 	};
 }

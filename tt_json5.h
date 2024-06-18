@@ -59,14 +59,8 @@ SOFTWARE.
 #include <codecvt>
 #include <functional>
 #include <unordered_map>
-
-// Options:
-// Use wchar_t and std::wstring.
-// #define TT_JSON5_USE_WSTR
-// Use 128 bit scalars.
-// #define TT_JSON5_LONG_DOUBLE
-// Use 32 bit scalars.
-// #define TT_JSON5_NO_DOUBLE
+#include "windont.h"
+#include <stringapiset.h>
 
 #ifndef TT_JSON5_NO_JSON5
 // Individual JSON5 features (turning them all off reverts this to a strict JSON compliant parser):
@@ -153,14 +147,26 @@ namespace TTJson {
 
     class Array : public std::vector<Value> {
     public:
+        using vector::vector;
+
         Value& operator[](size_t index);
         const Value& operator[](size_t index) const;
     };
 
     class Object : public std::unordered_map<str_t, Value> {
     public:
+        using unordered_map::unordered_map;
+
         Value& get(const str_t& key);
         const Value& get(const str_t& key) const;
+
+        const Value* tryGet(const str_t& key) const;
+        const bool* tryGetBool(const str_t& key) const;
+        const long long* tryGetInt(const str_t& key) const;
+        const double* tryGetDouble(const str_t& key) const;
+        const str_t* tryGetString(const str_t& key) const;
+        const Array* tryGetArray(const str_t& key) const;
+        const Object* tryGetObject(const str_t& key) const;
     };
 
     class Value {
@@ -204,6 +210,14 @@ namespace TTJson {
         str_t& asString();
         Array& asArray();
         Object& asObject();
+
+        bool isNull() const;
+        bool isBool() const;
+        bool isInt() const;
+        bool isDouble() const;
+        bool isString() const;
+        bool isArray() const;
+        bool isObject() const;
     };
 
     class Parser {
@@ -249,14 +263,14 @@ namespace TTJson {
         void parseValue(istream_t& stream, Value& result);
 
     public:
-        inline bool hasError();
-        inline str_t error();
+        bool hasError();
+        str_t error();
         void parse(istream_t& stream, Value& result);
     };
 
     // Utilities to open fstreams with utf8 encoding.
     ifstream_t readUtf8(const std::string& path);
-    ofstream_t writeUtf8(const std::string & path, bool BOM = false);
+    ofstream_t writeUtf8(const std::string & path);
 
     void serialize(const Value& value, ostream_t& out, const char_t* tab = nullptr, int depth = 0);
 }
@@ -279,12 +293,17 @@ namespace TTJson {
     }
 #else
     str_t makeString(const wchar_t* c) {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
-        return utf8_conv.to_bytes(c);
+        size_t sz = wcslen(c);
+        str_t r;
+        r.resize(sz * 4, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, c, (int)sz, r.data(), (int)r.size(), nullptr, nullptr);
+        return r;
     }
     str_t makeString(wchar_t c) {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
-        return utf8_conv.to_bytes(c);
+        str_t r;
+        r.resize(4, '\0');
+        WideCharToMultiByte(CP_UTF8, 0, &c, 1, r.data(), (int)r.size(), nullptr, nullptr);
+        return r;
     }
 #endif
     str_t makeString(const char_t* c) {
@@ -320,6 +339,48 @@ namespace TTJson {
         return it->second;
     }
 
+    const Value* Object::tryGet(const str_t& key) const {
+        auto it = find(key);
+        if (it != end()) return &it->second;
+        return nullptr;
+    }
+
+    const bool* Object::tryGetBool(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isBool()) return &value->asBool();
+        return nullptr;
+    }
+
+    const long long* Object::tryGetInt(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isInt()) return &value->asInt();
+        return nullptr;
+    }
+
+    const double* Object::tryGetDouble(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isDouble()) return &value->asDouble();
+        return nullptr;
+    }
+
+    const str_t* Object::tryGetString(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isString()) return &value->asString();
+        return nullptr;
+    }
+
+    const Array* Object::tryGetArray(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isArray()) return &value->asArray();
+        return nullptr;
+    }
+
+    const Object* Object::tryGetObject(const str_t& key) const {
+        const Value* value = tryGet(key);
+        if (value && value->isObject()) return &value->asObject();
+        return nullptr;
+    }
+
     Value::errorFunc Value::castErrorHandler = nullptr;
 
     Value::Value(ValueType type) : type(type) {}
@@ -345,6 +406,14 @@ namespace TTJson {
     str_t& Value::asString() { if (type != ValueType::String && castErrorHandler != nullptr) castErrorHandler(); return sValue; }
     Array& Value::asArray() { if (type != ValueType::Array && castErrorHandler != nullptr) castErrorHandler(); return aValue; }
     Object& Value::asObject() { if (type != ValueType::Object && castErrorHandler != nullptr) castErrorHandler(); return oValue; }
+
+    bool Value::isNull() const { return type == ValueType::Null; }
+    bool Value::isBool() const { return type == ValueType::Bool; }
+    bool Value::isInt() const { return type == ValueType::Int; }
+    bool Value::isDouble() const { return type == ValueType::Double; }
+    bool Value::isString() const { return type == ValueType::String; }
+    bool Value::isArray() const { return type == ValueType::Array; }
+    bool Value::isObject() const { return type == ValueType::Object; }
 
     inline void Parser::clearError() {
         parseError.clear();
@@ -393,21 +462,11 @@ namespace TTJson {
         return result;
     }
 
-    // Work around unget() as it seems to error out in the empty array test case,
-    // even though we just read the second character of the file and repeatedly
-    // read and unget the first character of the file succesfully already...
-    // TODO: There is still 1 usage of unget in here
-    // when looking for keywords, as that needs to rewind
-    // by more than 1 char.
-#define NO_UNGET
-
     char_t Parser::read1(istream_t& stream) {
-#ifdef NO_UNGET
         if (rewind) {
             rewind = false;
             return lastChr;
         }
-#endif
 
         stream.read(&lastChr, 1);
 
@@ -432,32 +491,11 @@ namespace TTJson {
         return lastChr;
     }
 
-#ifndef NO_UNGET
-    void Parser::rewind1(istream_t& stream) {
-        if (errorCode != 0)
-            return;
-        stream.unget();
-        --cursor;
-        if (lastChr == '\n') {
-            --lineNumber;
-            columnNumber = prevColumnNumber;
-        }
-        if (!stream.good()) {
-            throwRewindError();
-            return;
-        }
-    }
-#else
     void Parser::rewind1(istream_t& stream) {
         if (rewind)
             throwRewindError();
         rewind = true;
     }
-#endif
-
-#ifdef NO_UNGET
-#undef NO_UNGET
-#endif
 
 #if defined(TT_JSON5_SUPPORT_BLOCK_COMMENTS) || defined(TT_JSON5_SUPPORT_SINGLE_LINE_COMMENTS)
     bool Parser::skipComments(istream_t& stream, char_t& b) {
@@ -560,6 +598,7 @@ namespace TTJson {
             if (chr != word[i]) {
                 if (rewindOnFail) {
                     while (i) {
+                        // TODO: The empty array test case broke on unget so I no longer trust it. Can we work around this?
                         stream.unget();
                         --i;
                     }
@@ -578,9 +617,10 @@ namespace TTJson {
 #ifdef TT_JSON5_USE_WSTR
         dst << *reinterpret_cast<wchar_t*>(&codePoint);
 #else
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> utf8_conv;
-        wchar_t chr = codePoint;
-        dst << utf8_conv.to_bytes(chr);
+        static char buf[5];
+        memset(buf, 0, sizeof(buf));
+        WideCharToMultiByte(CP_UTF8, 0, reinterpret_cast<wchar_t*>(&codePoint), 1, buf, sizeof(buf), nullptr, nullptr);
+        dst << buf;
 #endif
     }
 
@@ -628,7 +668,7 @@ namespace TTJson {
                 for (int i = 0; i < 2; ++i) {
                     int value = readHexChar(stream);
                     if (value == -1) {
-                        throwParseError(makeString("Invalid unicode escape code, expected 4 hexadecimal digits, not ") + peek1(stream) + makeString('.'));
+                        throwParseError(makeString("Invalid hex escape code, expected 2 hexadecimal digits, not ") + peek1(stream) + makeString('.'));
                         return {};
                     }
                     codePoint <<= 4;
@@ -1065,11 +1105,11 @@ namespace TTJson {
         skipWhitespace(stream);
     }
 
-    inline bool Parser::hasError() {
+    bool Parser::hasError() {
         return errorCode != 0;
     }
 
-    inline str_t Parser::error() {
+    str_t Parser::error() {
         str_t result{};
         switch (errorCode) {
         case 1:
@@ -1142,7 +1182,7 @@ namespace TTJson {
         void indent(ostream_t& out, const char_t* tab, int depth) {
             if (!tab) return;
             for (int i = 0; i < depth; ++i)
-                out << tab;
+                out << *tab;
         }
 
         void newLine(ostream_t& out, const char_t* tab) {
@@ -1194,7 +1234,7 @@ namespace TTJson {
                         indent(out, tab, depth + 1);
                     serialize(*e, out, tab, depth + 1);
                     if (std::next(e) != value.aValue.end())
-                        out << ', ';
+                        out << ',';
                     if (mode)
                         newLine(out, tab);
                 }

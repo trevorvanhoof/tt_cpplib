@@ -28,14 +28,23 @@ namespace TT {
 		return frustum(-fW, fW, -fH, fH, near, far);
 	}
 
-	Mat44 Mat44::translate(float x, float y, float z) {
-		return {
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			x, y, z, 1.0f,
-		};
-	}
+    Mat44 Mat44::translate(float x, float y, float z) {
+        return {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            x, y, z, 1.0f,
+        };
+    }
+
+    Mat44 Mat44::translate(Vec translate) {
+        return {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            translate.x, translate.y, translate.z, 1.0f,
+        };
+    }
 
 	Mat44 Mat44::scale(float x, float y, float z) {
 		return {
@@ -151,8 +160,8 @@ namespace TT {
 	}
 
 	Mat44 Mat44::operator*(const Mat44& b) const {
-		Mat44 c = b;
-		c *= *this;
+		Mat44 c = *this;
+		c *= b;
 		return c;
 	}
 
@@ -347,7 +356,7 @@ namespace TT {
 	const double PId = 3.141592653589;
 	const double TAUd = PId + PId;
 	const double DEG2RADd = PId / 180.0;
-	const Mat44 IDENTITY = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
+	const Mat44 MAT44_IDENTITY = { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
 }
 
 #if 0
@@ -370,7 +379,7 @@ struct TestMatricesScope {
 void testMatrices() {
 	Window window;
 	window.CreateGLContext();
-	LoadGLFunctions();
+	loadGLFunctions();
 
 	{
 		TestMatricesScope t;

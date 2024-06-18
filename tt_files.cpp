@@ -8,9 +8,9 @@
 #include "windont.h"
 
 namespace TT {
-    std::string readAllBytes(const ConstStringView& filename) {
+    std::string readAllBytes(const std::string_view filename) {
         std::FILE* fp; 
-        fopen_s(&fp, filename.start, "rb");
+        fopen_s(&fp, filename.data(), "rb");
         if (fp) {
             std::string contents;
             std::fseek(fp, 0, SEEK_END);
@@ -20,13 +20,13 @@ namespace TT {
             std::fclose(fp);
             return contents;
         }   
-        error("Failed to open file for reading: '%s.'", filename);
+        error("Failed to open file for reading: '%s.'", filename.data());
         return "";
     }
 
-    std::string readWithIncludes(const ConstStringView& filePath, std::unordered_set<std::string>& outDependencies) {
+    std::string readWithIncludes(const std::string_view filePath, std::unordered_set<std::string>& outDependencies) {
         // Read this file
-        outDependencies.insert(filePath.start);
+        outDependencies.insert(filePath.data());
         std::string code = readAllBytes(filePath);
 
         // Find include statements
@@ -82,47 +82,52 @@ namespace TT {
         return join(sections, "");
     }
 
-    bool exists(const ConstStringView& filename) {
-        if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(filename.start) && GetLastError() == ERROR_FILE_NOT_FOUND)
+    bool exists(const std::string_view filename) {
+        if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(filename.data()) && GetLastError() == ERROR_FILE_NOT_FOUND)
             return false;
         return true;
     }
 
-    BinaryReader::BinaryReader(const ConstStringView& filename) {
-        fopen_s(&fp, filename.start, "rb");
+    BinaryReader::BinaryReader(const std::string_view filename) {
+        fopen_s(&fp, filename.data(), "rb");
         TT::assert(fp != nullptr, "Failed to open file for reading: '%s.'", filename);
     }
 
-    size_t BinaryReader::readInto(const StringView& target) const {
-        return std::fread(target.start, 1, target.count, fp);
+    size_t BinaryReader::readInto(std::string& target) const {
+        return std::fread((void*)target.data(), 1, target.size(), fp);
     }
 
-    void BinaryReader::ensureReadInto(const StringView& target) const {
-        TT::assert(target.count == readInto(target));
+    size_t BinaryReader::readInto(char* target, size_t size) const {
+        return std::fread((void*)target, 1, size, fp);
+    }
+
+    void BinaryReader::ensureReadInto(std::string& target) const {
+        TT::assert(target.size() == readInto(target));
     }
 
     std::string BinaryReader::read(size_t size) const {
         std::string contents;
         contents.resize(size);
-        StringView view(contents);
-        contents.resize(readInto(view));
+        assert(size == readInto(contents));
         return contents;
     }
 
-    unsigned int BinaryReader::u32() const {
-        unsigned int result;
-        TT::assert(sizeof(unsigned int) == std::fread((char*)&result, 1, sizeof(unsigned int), fp));
-        return result;
-    }
+    unsigned char BinaryReader::u8() const { return read<unsigned char>(); }
+    unsigned short BinaryReader::u16() const { return read<unsigned short>(); }
+    unsigned int BinaryReader::u32() const { return read<unsigned int>(); }
+    unsigned long long BinaryReader::u64() const { return read<unsigned long long>(); }
 
-    int BinaryReader::i32() const {
-        int result;
-        TT::assert(sizeof(int) == std::fread((char*)&result, 1, sizeof(int), fp));
-        return result;
-    }
+    char BinaryReader::i8() const { return read<char>(); }
+    short BinaryReader::i16() const { return read<short>(); }
+    int BinaryReader::i32() const { return read<int>(); }
+    long long BinaryReader::i64() const { return read<long long>(); }
+    
+    float BinaryReader::f32() const { return read<float>(); }
+    double BinaryReader::f64() const { return read<double>(); }
 
-    std::string BinaryReader::str() const {
-        return read(u32());
+    BinaryWriter::BinaryWriter(const std::string_view filename) {
+        fopen_s(&fp, filename.data(), "wb");
+        TT::assert(fp != nullptr, "Failed to open file for writing: '%s.'", filename);
     }
 
     std::string readWithIncludes(const std::string& filePath) {

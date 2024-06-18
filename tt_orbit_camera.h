@@ -1,7 +1,8 @@
 #pragma once
 
-#include "tt_components.h"
 #include "tt_window.h"
+#include "tt_signals.h"
+#include "tt_cgmath.h"
 
 namespace TT {
 	struct OrbitCameraControl {
@@ -10,14 +11,12 @@ namespace TT {
 		float pitch = -45.0f * DEG2RAD;
 		float distance = 10.0f;
 
-		Transform& cameraTransform;
 		int beginDragX;
 		int beginDragY;
 		float beginDrawYaw;
 		float beginDrawPitch;
 
-		OrbitCameraControl(Transform& cameraTransform);
-		void sync();
+        Mat44 localMatrix() const;
 		void onMouseEvent(const TT::MouseEvent& event);
 		void onWheelEvent(const TT::WheelEvent& event);
 

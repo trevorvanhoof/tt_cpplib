@@ -1,8 +1,6 @@
 // Options:
 // Use wchar_t and std::wstring.
-#ifdef UNICODE
-#define TT_JSON5_USE_WSTR
-#endif
+// #define TT_JSON5_USE_WSTR
 // Use 128 bit scalars.
 // #define TT_JSON5_LONG_DOUBLE
 // Use 32 bit scalars.

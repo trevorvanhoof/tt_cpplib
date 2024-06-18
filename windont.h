@@ -13,3 +13,4 @@
 #undef min
 #undef max
 #undef assert
+#undef ERROR

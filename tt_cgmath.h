@@ -64,6 +64,10 @@ namespace TT {
 		Vec& operator-=(__m128 other);
 		Vec& operator%=(__m128 other);
 		Vec swizzle(unsigned char a, unsigned char b, unsigned char c, unsigned char d) const;
+        bool operator==(const Vec& rhs) const { return memcmp(&m, &rhs.m, sizeof(__m128)) == 0; }
+        bool operator!=(const Vec& rhs) const { return !(*this == rhs); }
+        float operator[](size_t index) const { return m.m128_f32[index]; }
+        float& operator[](size_t index) { return m.m128_f32[index]; }
 	};
 
 	struct Vec2 : public Vec {
@@ -117,6 +121,7 @@ namespace TT {
 		static Mat44 frustum(float left, float right, float top, float bottom, float near, float far);
 		static Mat44 orthoSymmetric(float width, float height, float near, float far);
 		static Mat44 perspectiveY(float fovRadians, float aspect, float near, float far);
+		static Mat44 translate(Vec translate);
 		static Mat44 translate(float x, float y, float z);
 		static Mat44 scale(float x, float y, float z);
 		static Mat44 rotateX(float radians);
@@ -125,7 +130,7 @@ namespace TT {
 		static Mat44 rotate(float radiansX, float radiansY, float radiansZ, ERotateOrder order = ERotateOrder::YXZ);
 		static Mat44 rotate(Vec radians, ERotateOrder order = ERotateOrder::YXZ);
 		static Mat44 TRS(float x = 0.0f, float y = 0.0f, float z = 0.0f, float radiansX = 0.0f, float radiansY = 0.0f, float radiansZ = 0.0f, float sx = 1.0f, float sy = 1.0f, float sz = 1.0f, ERotateOrder order = ERotateOrder::YXZ);
-		static Mat44 TRS(Vec translate, Vec radians, Vec scake, ERotateOrder order = ERotateOrder::YXZ);
+		static Mat44 TRS(Vec translate, Vec radians, Vec scale, ERotateOrder order = ERotateOrder::YXZ);
 		void inverse();
 		void transpose();
 		Mat44 inversed() const;
@@ -138,5 +143,5 @@ namespace TT {
 	extern const double PId;
 	extern const double TAUd;
 	extern const double DEG2RADd;
-	extern const Mat44 IDENTITY;
+	extern const Mat44 MAT44_IDENTITY;
 }
