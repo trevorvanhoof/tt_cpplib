@@ -3,46 +3,11 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <string_view>
 
 namespace TT {
-    struct StringView {
-        char* start;
-        const size_t count;
-
-        StringView(std::string& text) : start(text.data()), count(text.size()) {}
-        StringView(char* start) : start(start), count(strlen(start)) {}
-        StringView(char* start, size_t count) : start(start), count(count) {}
-    };
-
-    struct ConstStringView {
-        const char* start;
-        const size_t count;
-
-        ConstStringView(const std::string& text) : start(text.data()), count(text.size()) {}
-        ConstStringView(const char* start) : start(start), count(strlen(start)) {}
-        ConstStringView(const char* start, size_t count) : start(start), count(count) {}
-    };
-
-    struct WStringView {
-        wchar_t* start;
-        const size_t count;
-
-        WStringView(std::wstring& text) : start(text.data()), count(text.size()) {}
-        WStringView(wchar_t* start) : start(start), count(wcslen(start)) {}
-        WStringView(wchar_t* start, size_t count) : start(start), count(count) {}
-    };
-
-    struct ConstWStringView {
-        const wchar_t* start;
-        const size_t count;
-
-        ConstWStringView(const std::wstring& text) : start(text.data()), count(text.size()) {}
-        ConstWStringView(const wchar_t* start) : start(start), count(wcslen(start)) {}
-        ConstWStringView(const wchar_t* start, size_t count) : start(start), count(count) {}
-    };
-
-	size_t find(const ConstStringView& text, const ConstStringView& substr, size_t offset = 0);
-	std::vector<size_t> findAll(const ConstStringView& text, const ConstStringView& substr);
+	size_t find(const std::string_view text, const std::string_view substr, size_t offset = 0);
+	std::vector<size_t> findAll(const std::string_view text, const std::string_view substr);
 
 	template<typename T>
 	std::string join(std::vector<T> const& elements, const char* const delimiter) {
@@ -62,8 +27,8 @@ namespace TT {
 
 	// Caller owns the return value
 	// Implemented in messages.cpp for static function reasons
-	char* formatStr(ConstStringView fmt, ...);
-	wchar_t* formatStr(ConstWStringView fmt, ...);
+	char* formatStr(const std::string_view fmt, ...);
+	wchar_t* formatStr(const std::wstring_view fmt, ...);
 
-	std::vector<std::string> split(std::string s, std::string delimiter);
+	std::vector<std::string> split(const std::string_view s, const std::string_view delimiter);
 }
