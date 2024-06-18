@@ -66,6 +66,8 @@ namespace TT {
 		Vec swizzle(unsigned char a, unsigned char b, unsigned char c, unsigned char d) const;
         bool operator==(const Vec& rhs) const { return memcmp(&m, &rhs.m, sizeof(__m128)) == 0; }
         bool operator!=(const Vec& rhs) const { return !(*this == rhs); }
+        float operator[](size_t index) const { return m.m128_f32[index]; }
+        float& operator[](size_t index) { return m.m128_f32[index]; }
 	};
 
 	struct Vec2 : public Vec {
