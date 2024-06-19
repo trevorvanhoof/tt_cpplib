@@ -11,7 +11,8 @@
 namespace TT {
 	std::string readAllBytes(const std::string_view filename);
 	std::string readWithIncludes(const std::string_view filePath, std::unordered_set<std::string>& outDependencies);
-	bool exists(const std::string_view filename);
+	bool fileExists(const std::string_view filename);
+    unsigned long long fileLastWriteTime(const std::string_view filename);
 
     struct BinaryReader {
         BinaryReader(const std::string_view filename);

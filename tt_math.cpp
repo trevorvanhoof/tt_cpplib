@@ -3,7 +3,6 @@
 #include <cmath>
 
 namespace TT {
-
 #define SPECIAL(T) \
 	template<> T clamp(T v, T n, T x) { return _mm_max_ps(_mm_min_ps(v, x), n); } \
 	template<> T min(T a, T b) { return _mm_min_ps(a, b); } \

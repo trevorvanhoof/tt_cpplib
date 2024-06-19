@@ -82,10 +82,17 @@ namespace TT {
         return join(sections, "");
     }
 
-    bool exists(const std::string_view filename) {
+    bool fileExists(const std::string_view filename) {
         if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(filename.data()) && GetLastError() == ERROR_FILE_NOT_FOUND)
             return false;
         return true;
+    }
+
+    unsigned long long fileLastWriteTime(const std::string_view filePath) {
+        WIN32_FILE_ATTRIBUTE_DATA info = {};
+        if(!GetFileAttributesExA(filePath.data(), GetFileExInfoStandard, &info))
+            return 0;
+        return static_cast<unsigned long long>(info.ftLastWriteTime.dwHighDateTime) << 32 | static_cast<unsigned long long>(info.ftLastWriteTime.dwLowDateTime);
     }
 
     BinaryReader::BinaryReader(const std::string_view filename) {
