@@ -83,6 +83,8 @@ namespace TT {
     }
 
     bool fileExists(const std::string_view filename) {
+        if (filename == "") 
+            return false;
         if (INVALID_FILE_ATTRIBUTES == GetFileAttributesA(filename.data()) && GetLastError() == ERROR_FILE_NOT_FOUND)
             return false;
         return true;
