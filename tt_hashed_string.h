@@ -78,26 +78,19 @@ namespace {
 
 #define TT_STRING_HASH(x) (_crc32<sizeof(x) - 2>(x) ^ 0xFFFFFFFF)
 
+#ifdef _DEBUG
 namespace TT {
     struct HashedString {
         size_t hash;
-    #ifndef _DEBUG
-        HashedString(size_t hash) : hash(hash) {}
-    #else
         std::string text;
         HashedString(const std::string& text, size_t hash) : text(text), hash(hash) {}
-    #endif
-
         operator size_t() const { return hash; }
-
         bool operator==(const TT::HashedString& rhs) { return hash == rhs.hash; }
     };
 }
-
-#ifdef _DEBUG
+template <> struct std::hash<TT::HashedString> { size_t operator()(const TT::HashedString& value) const { return (size_t)value; } };
 #define TT_HASHED_STRING(x) TT::HashedString(std::string(x), size_t(TT_STRING_HASH(x)))
 #else
-#define TT_HASHED_STRING(x) TT::HashedString(TT_STRING_HASH(x))
+namespace TT { typedef size_t HashedString; }
+#define TT_HASHED_STRING(x) TT_STRING_HASH(x)
 #endif
-
-template <> struct std::hash<TT::HashedString> { size_t operator()(const TT::HashedString& value) const { return (size_t)value; } };
