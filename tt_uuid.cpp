@@ -22,8 +22,12 @@ namespace TT {
     }
 
     UUID::operator std::string() const {
-        static char buf[39];
-        UuidToStringA((GUID*)this, (unsigned char**)&buf);
+        std::string buf;
+        RPC_CSTR szUuid = NULL;
+        if (UuidToStringA((GUID*)this, &szUuid) == RPC_S_OK) {
+            buf = (char*) szUuid;
+            RpcStringFreeA(&szUuid);
+        }
         return buf;
     }
 }
