@@ -1182,7 +1182,7 @@ namespace TTJson {
         void indent(ostream_t& out, const char_t* tab, int depth) {
             if (!tab) return;
             for (int i = 0; i < depth; ++i)
-                out << *tab;
+                out << tab;
         }
 
         void newLine(ostream_t& out, const char_t* tab) {
