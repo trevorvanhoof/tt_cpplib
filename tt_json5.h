@@ -273,6 +273,10 @@ namespace TTJson {
     ofstream_t writeUtf8(const std::string & path);
 
     void serialize(const Value& value, ostream_t& out, const char_t* tab = nullptr, int depth = 0);
+    void save(const std::string_view path, const TTJson::Value& value, const char_t* tab = nullptr);
+
+    TTJson::Value deserialize(istream_t& in);
+    TTJson::Value load(const std::string_view path);
 }
 
 #ifdef TT_JSON5_IMPLEMENTATION
@@ -1267,6 +1271,23 @@ namespace TTJson {
             out << makeString("null");
             break;
         }
+    }
+
+    TTJson::Value deserialize(istream_t& stream) {
+        TTJson::Value document;
+        TTJson::Parser parser;
+        parser.parse(stream, document);
+        return document;
+    }
+
+    TTJson::Value load(const std::string_view path) {
+        std::ifstream ifs((std::string)path, std::ios::binary | std::ios::in);
+        return deserialize(ifs);
+    }
+
+    void save(const std::string_view path, const TTJson::Value& value, const char_t* tab) {
+        std::ofstream ofs((std::string)path, std::ios::binary | std::ios::out);
+        serialize(value, ofs, tab);
     }
 }
 #endif
