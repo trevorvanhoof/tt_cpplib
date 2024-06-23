@@ -1,4 +1,5 @@
 #include "tt_uuid.h"
+#include "tt_messages.h"
 #include "windont.h"
 #include <guiddef.h>
 
@@ -13,19 +14,19 @@ namespace TT {
     
     UUID UUID::generate() {
         UUID r;
-        CoCreateGuid((GUID*)&r);
+        TT::assert(CoCreateGuid((GUID*)&r) == RPC_S_OK);
         return r;
     }
 
-    UUID::UUID(const char* str) {
-        UuidFromStringA((unsigned char*)str, (GUID*)this);
+    UUID::UUID(const std::string_view str) {
+        TT::assert(UuidFromStringA((unsigned char*)str.data(), (GUID*)this) == RPC_S_OK);
     }
 
     UUID::operator std::string() const {
         std::string buf;
         RPC_CSTR szUuid = NULL;
         if (UuidToStringA((GUID*)this, &szUuid) == RPC_S_OK) {
-            buf = (char*) szUuid;
+            buf = (char*)szUuid;
             RpcStringFreeA(&szUuid);
         }
         return buf;

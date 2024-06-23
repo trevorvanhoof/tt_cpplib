@@ -13,7 +13,7 @@ namespace TT {
 
         UUID();
         static UUID generate();
-        UUID(const char* str);
+        UUID(const std::string_view str);
         operator std::string() const;
 
         // The compare operator is required by std::unordered_map
