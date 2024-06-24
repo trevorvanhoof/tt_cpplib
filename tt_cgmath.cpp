@@ -102,7 +102,8 @@ namespace TT {
 	Mat44 Mat44::rotate(Vec radians, ERotateOrder order) { return Mat44::rotate(radians.x, radians.y, radians.z, order); }
 
 	Mat44 Mat44::TRS(float x, float y, float z, float radiansX, float radiansY, float radiansZ, float sx, float sy, float sz, ERotateOrder order) {
-		Mat44 r = rotate(radiansX, radiansY, radiansZ) * scale(sx, sy, sz);
+        Mat44 r = rotate(radiansX, radiansY, radiansZ, order);;
+        r = scale(sx, sy, sz) * r;
 		r.col[3].m128_f32[0] = x;
 		r.col[3].m128_f32[1] = y;
 		r.col[3].m128_f32[2] = z;
@@ -111,20 +112,19 @@ namespace TT {
 
 	Mat44 Mat44::TRS(Vec translate, Vec radians, Vec scale, ERotateOrder order) { return Mat44::TRS(translate.x, translate.y, translate.z, radians.x, radians.y, radians.z, scale.x, scale.y, scale.z, order); }
 
-	Mat44& Mat44::operator*=(const Mat44& b) {
-		// TODO: document whether 'b' is parent or child
+	Mat44& Mat44::operator*=(const Mat44& parent) {
 		__m128 x = _mm_shuffle_ps(col[0], col[0], _MM_SHUFFLE(0, 0, 0, 0));
 		__m128 y = _mm_shuffle_ps(col[0], col[0], _MM_SHUFFLE(1, 1, 1, 1));
 		__m128 z = _mm_shuffle_ps(col[0], col[0], _MM_SHUFFLE(2, 2, 2, 2));
 		__m128 w = _mm_shuffle_ps(col[0], col[0], _MM_SHUFFLE(3, 3, 3, 3));
 		col[0] = _mm_add_ps(
 			_mm_add_ps(
-				_mm_mul_ps(x, b.col[0]),
-				_mm_mul_ps(y, b.col[1])
+				_mm_mul_ps(x, parent.col[0]),
+				_mm_mul_ps(y, parent.col[1])
 			),
 			_mm_add_ps(
-				_mm_mul_ps(z, b.col[2]),
-				_mm_mul_ps(w, b.col[3])
+				_mm_mul_ps(z, parent.col[2]),
+				_mm_mul_ps(w, parent.col[3])
 			)
 		);
 
@@ -132,44 +132,44 @@ namespace TT {
 		y = _mm_shuffle_ps(col[1], col[1], _MM_SHUFFLE(1, 1, 1, 1));
 		z = _mm_shuffle_ps(col[1], col[1], _MM_SHUFFLE(2, 2, 2, 2));
 		w = _mm_shuffle_ps(col[1], col[1], _MM_SHUFFLE(3, 3, 3, 3));
-		col[1] = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, b.col[0]),
-			_mm_mul_ps(y, b.col[1])),
-			_mm_add_ps(_mm_mul_ps(z, b.col[2]),
-				_mm_mul_ps(w, b.col[3])));
+		col[1] = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, parent.col[0]),
+			_mm_mul_ps(y, parent.col[1])),
+			_mm_add_ps(_mm_mul_ps(z, parent.col[2]),
+				_mm_mul_ps(w, parent.col[3])));
 
 		x = _mm_shuffle_ps(col[2], col[2], _MM_SHUFFLE(0, 0, 0, 0));
 		y = _mm_shuffle_ps(col[2], col[2], _MM_SHUFFLE(1, 1, 1, 1));
 		z = _mm_shuffle_ps(col[2], col[2], _MM_SHUFFLE(2, 2, 2, 2));
 		w = _mm_shuffle_ps(col[2], col[2], _MM_SHUFFLE(3, 3, 3, 3));
-		col[2] = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, b.col[0]),
-			_mm_mul_ps(y, b.col[1])),
-			_mm_add_ps(_mm_mul_ps(z, b.col[2]),
-				_mm_mul_ps(w, b.col[3])));
+		col[2] = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, parent.col[0]),
+			_mm_mul_ps(y, parent.col[1])),
+			_mm_add_ps(_mm_mul_ps(z, parent.col[2]),
+				_mm_mul_ps(w, parent.col[3])));
 
 		x = _mm_shuffle_ps(col[3], col[3], _MM_SHUFFLE(0, 0, 0, 0));
 		y = _mm_shuffle_ps(col[3], col[3], _MM_SHUFFLE(1, 1, 1, 1));
 		z = _mm_shuffle_ps(col[3], col[3], _MM_SHUFFLE(2, 2, 2, 2));
 		w = _mm_shuffle_ps(col[3], col[3], _MM_SHUFFLE(3, 3, 3, 3));
-		col[3] = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, b.col[0]),
-			_mm_mul_ps(y, b.col[1])),
-			_mm_add_ps(_mm_mul_ps(z, b.col[2]),
-				_mm_mul_ps(w, b.col[3])));
+		col[3] = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, parent.col[0]),
+			_mm_mul_ps(y, parent.col[1])),
+			_mm_add_ps(_mm_mul_ps(z, parent.col[2]),
+				_mm_mul_ps(w, parent.col[3])));
 
 		return *this;
 	}
 
-	Mat44 Mat44::operator*(const Mat44& b) const {
+	Mat44 Mat44::operator*(const Mat44& parent) const {
 		Mat44 c = *this;
-		c *= b;
+		c *= parent;
 		return c;
 	}
 
-	Vec4 Mat44::operator*(const Vec4& b) const {
+	Vec4 Mat44::operator*(const Vec4& point) const {
 		Vec4 r;
-		__m128 x = _mm_shuffle_ps(b.m, b.m, _MM_SHUFFLE(0, 0, 0, 0));
-		__m128 y = _mm_shuffle_ps(b.m, b.m, _MM_SHUFFLE(1, 1, 1, 1));
-		__m128 z = _mm_shuffle_ps(b.m, b.m, _MM_SHUFFLE(2, 2, 2, 2));
-		__m128 w = _mm_shuffle_ps(b.m, b.m, _MM_SHUFFLE(3, 3, 3, 3));
+		__m128 x = _mm_shuffle_ps(point.m, point.m, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 y = _mm_shuffle_ps(point.m, point.m, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 z = _mm_shuffle_ps(point.m, point.m, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 w = _mm_shuffle_ps(point.m, point.m, _MM_SHUFFLE(3, 3, 3, 3));
 		r.m = _mm_add_ps(_mm_add_ps(_mm_mul_ps(x, col[0]), _mm_mul_ps(y, col[1])), _mm_add_ps(_mm_mul_ps(z, col[2]), _mm_mul_ps(w, col[3])));
 		return r;
 	}
