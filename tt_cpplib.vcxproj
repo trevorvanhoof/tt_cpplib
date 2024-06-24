@@ -83,10 +83,8 @@
   <ItemGroup>
     <ClInclude Include="earcut.hpp" />
     <ClInclude Include="tt_cgmath.h" />
-    <ClInclude Include="tt_components.h" />
     <ClInclude Include="tt_files.h" />
     <ClInclude Include="tt_uuid.h" />
-    <ClInclude Include="tt_json.h" />
     <ClInclude Include="tt_json5.h" />
     <ClInclude Include="tt_math.h" />
     <ClInclude Include="tt_messages.h" />
@@ -108,10 +106,6 @@
   <ItemGroup>
     <ClCompile Include="earcut.cpp" />
     <ClCompile Include="tt_cgmath.cpp" />
-    <ClCompile Include="tt_components.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="tt_files.cpp" />
     <ClCompile Include="tt_uuid.cpp" />
     <ClCompile Include="tt_json5.cpp" />

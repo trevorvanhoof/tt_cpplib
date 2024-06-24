@@ -78,14 +78,8 @@
     <ClInclude Include="tt_ui.h">
       <Filter>Header Files\experimental</Filter>
     </ClInclude>
-    <ClInclude Include="tt_components.h">
-      <Filter>Header Files\experimental</Filter>
-    </ClInclude>
     <ClInclude Include="windont.h">
       <Filter>Header Files\core</Filter>
-    </ClInclude>
-    <ClInclude Include="tt_json.h">
-      <Filter>Header Files\deprecated</Filter>
     </ClInclude>
     <ClInclude Include="tt_numerictypes.h">
       <Filter>Header Files\core</Filter>
@@ -139,9 +133,6 @@
       <Filter>Source Files\core</Filter>
     </ClCompile>
     <ClCompile Include="tt_ui.cpp">
-      <Filter>Source Files\experimental</Filter>
-    </ClCompile>
-    <ClCompile Include="tt_components.cpp">
       <Filter>Source Files\experimental</Filter>
     </ClCompile>
     <ClCompile Include="tt_uuid.cpp">
