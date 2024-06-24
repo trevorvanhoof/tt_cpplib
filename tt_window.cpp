@@ -60,7 +60,7 @@ namespace TT {
 	std::unordered_map<HWND, Window*> Window::dankjewelwindows;
 
 	namespace {
-        MouseEvent createMouseEvent(WPARAM wParam, LPARAM lParam, Event::EType type, int button) {
+        MouseEvent createMouseEvent(WPARAM wParam, LPARAM lParam, Event::Type type, int button) {
             MouseEvent event;
             event.type = type;
             event.button = button;
@@ -161,7 +161,7 @@ namespace TT {
             event.isRepeat = (bool)(lParam & (1 << 30));
             event.key = (UINT)wParam;
             event.txt = buffer;
-            event.type = isKeyDown ? Event::EType::KeyDown : Event::EType::KeyUp;
+            event.type = isKeyDown ? Event::Type::KeyDown : Event::Type::KeyUp;
 
             if (isKeyDown)
                 modifiers.press(wParam);
@@ -230,7 +230,7 @@ namespace TT {
 		case WM_RBUTTONDOWN:
 		case WM_MBUTTONDOWN:
 		case WM_XBUTTONDOWN: {
-		    auto event = createMouseEvent(wParam, lParam, Event::EType::MouseDown, mouse);
+		    auto event = createMouseEvent(wParam, lParam, Event::Type::MouseDown, mouse);
 		    it->second->eventHandler(event);
 		    break;
 		}
@@ -239,7 +239,7 @@ namespace TT {
 		case WM_RBUTTONDBLCLK:
 		case WM_MBUTTONDBLCLK:
 		case WM_XBUTTONDBLCLK: {
-		    auto event = createMouseEvent(wParam, lParam, Event::EType::MouseDoubleClick, mouse);
+		    auto event = createMouseEvent(wParam, lParam, Event::Type::MouseDoubleClick, mouse);
 		    it->second->eventHandler(event);
 		    break;
         }
@@ -248,13 +248,13 @@ namespace TT {
 		case WM_RBUTTONUP:
 		case WM_MBUTTONUP:
 		case WM_XBUTTONUP: {
-		    auto event = createMouseEvent(wParam, lParam, Event::EType::MouseUp, mouse);
+		    auto event = createMouseEvent(wParam, lParam, Event::Type::MouseUp, mouse);
 		    it->second->eventHandler(event);
 		    break;
         }
 
 		case WM_MOUSEMOVE: {
-			auto event = createMouseEvent(wParam, lParam, Event::EType::MouseMove, -1);
+			auto event = createMouseEvent(wParam, lParam, Event::Type::MouseMove, -1);
 			it->second->eventHandler(event);
 			break;
 		}
@@ -278,7 +278,7 @@ namespace TT {
 		case WM_VSCROLL:
 		case WM_MOUSEWHEEL: {
 			WheelEvent event;
-			event.type = Event::EType::Wheel;
+			event.type = Event::Type::Wheel;
 			if ((wParam & MK_CONTROL) == MK_CONTROL) {
 				event.modifiers = (TT::Modifiers)((int)event.modifiers | (int)TT::Modifiers::Ctrl);
 			}
@@ -345,27 +345,27 @@ namespace TT {
 	}
 
 	void Window::handleEvent(const TT::Event& event) {
-		if (event.type == TT::Event::EType::Paint) {
+		if (event.type == TT::Event::Type::Paint) {
 			onPaintEvent((const TT::PaintEvent&)event);
-		} else if (event.type == TT::Event::EType::Resize)
+		} else if (event.type == TT::Event::Type::Resize)
 			onResizeEvent((const TT::ResizeEvent&)event);
-		else if (event.type == TT::Event::EType::MouseDown) {
+		else if (event.type == TT::Event::Type::MouseDown) {
 			mouseButtonStates |= 1u << ((TT::MouseEvent&)event).button;
 			onMouseEvent((const TT::MouseEvent&)event);
-		} else if (event.type == TT::Event::EType::MouseUp) {
+		} else if (event.type == TT::Event::Type::MouseUp) {
 			mouseButtonStates &= ~(1u << ((TT::MouseEvent&)event).button);
 			onMouseEvent((const TT::MouseEvent&)event);
-		} else if (event.type == TT::Event::EType::MouseMove && (enableMouseTracking || mouseButtonStates != 0))
+		} else if (event.type == TT::Event::Type::MouseMove && (enableMouseTracking || mouseButtonStates != 0))
 			onMouseEvent((const TT::MouseEvent&)event);
-		else if (event.type == TT::Event::EType::MouseDoubleClick)
+		else if (event.type == TT::Event::Type::MouseDoubleClick)
 			onMouseEvent((const TT::MouseEvent&)event);
-		else if (event.type == TT::Event::EType::Wheel)
+		else if (event.type == TT::Event::Type::Wheel)
 			onWheelEvent((const TT::WheelEvent&)event);
-		else if (event.type == TT::Event::EType::KeyDown || event.type == TT::Event::EType::KeyUp)
+		else if (event.type == TT::Event::Type::KeyDown || event.type == TT::Event::Type::KeyUp)
 			onKeyEvent((const TT::KeyEvent&)event);
-		else if (event.type == TT::Event::EType::Focus)
+		else if (event.type == TT::Event::Type::Focus)
 			onFocusEvent((const TT::FocusEvent&)event);
-		else if (event.type == TT::Event::EType::Close)
+		else if (event.type == TT::Event::Type::Close)
 			onCloseEvent((const TT::CloseEvent&)event);
 	}
 

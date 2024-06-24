@@ -128,7 +128,7 @@ typedef std::string str_t;
 
 namespace TT {
 	struct Event {
-		enum class EType {
+		enum class Type {
 			Invalid,
 			MouseDown,
 			MouseUp,
@@ -142,7 +142,7 @@ namespace TT {
 			Focus,
 			Close,
 		};
-		EType type = EType::Invalid;
+		Type type = Type::Invalid;
 	};
 
 	enum class Modifiers {
@@ -153,12 +153,12 @@ namespace TT {
 	};
 
 	struct PaintEvent : public Event {
-		PaintEvent() { type = Event::EType::Paint; }
+		PaintEvent() { type = Event::Type::Paint; }
 	};
 
 	struct ResizeEvent : public Event {
-		ResizeEvent() { type = Event::EType::Resize; }
-		ResizeEvent(int width, int height) : width(width), height(height) { type = Event::EType::Resize; }
+		ResizeEvent() { type = Event::Type::Resize; }
+		ResizeEvent(int width, int height) : width(width), height(height) { type = Event::Type::Resize; }
 		int width = 0;
 		int height = 0;
 	};
@@ -178,7 +178,7 @@ namespace TT {
 	};
 
 	struct WheelEvent : public Event {
-		WheelEvent() { type = Event::EType::Wheel; }
+		WheelEvent() { type = Event::Type::Wheel; }
 		int delta = 0;
 		int x = 0;
 		int y = 0;
@@ -186,14 +186,14 @@ namespace TT {
 	};
 
     struct FocusEvent : public Event {
-        FocusEvent() { type = Event::EType::Focus; }
+        FocusEvent() { type = Event::Type::Focus; }
         // 0 if focus lost, 1 if focus gained, -1 if unknown
         char hasMouseFocus = -1;
         char hasKeyboardFocus = -1;
     };
 
     struct CloseEvent : public Event {
-        CloseEvent() { type = Event::EType::Close; }
+        CloseEvent() { type = Event::Type::Close; }
     };
 
 	class Window {
