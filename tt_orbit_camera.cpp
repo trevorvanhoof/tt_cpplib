@@ -19,7 +19,7 @@ namespace TT {
     }
     
 	void OrbitCameraControl::onMouseEvent(const TT::MouseEvent& event) {
-		if (event.type == TT::Event::EType::MouseDown) {
+		if (event.type == TT::Event::Type::MouseDown) {
 			beginDragX = event.x;
 			beginDragY = event.y;
 			beginDrawYaw = yaw;
@@ -27,11 +27,11 @@ namespace TT {
 			drag = true;
 		}
 
-		if (event.type == TT::Event::EType::MouseUp) {
+		if (event.type == TT::Event::Type::MouseUp) {
 			drag = false;
 		}
 
-		if (event.type == TT::Event::EType::MouseMove && drag) {
+		if (event.type == TT::Event::Type::MouseMove && drag) {
 			int dx = event.x - beginDragX;
 			int dy = event.y - beginDragY;
 			yaw = fmodf(beginDrawYaw - dx * DEG2RAD * 0.5f, 360.0f * DEG2RAD);
