@@ -27,8 +27,8 @@ namespace TT {
 
 	// Caller owns the return value
 	// Implemented in messages.cpp for static function reasons
-	char* formatStr(const std::string_view fmt, ...);
-	wchar_t* formatStr(const std::wstring_view fmt, ...);
+	std::string formatStr(const std::string_view fmt, ...);
+	std::wstring formatStr(const std::wstring_view fmt, ...);
 
 	std::vector<std::string> split(const std::string_view s, const std::string_view delimiter);
 }

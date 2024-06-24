@@ -5,8 +5,7 @@
 
 namespace {
     // Caller owns the return value
-    char* _formatStr(const std::string_view fmt, va_list args) {
-        size_t size;
+    char* _formatStr(const std::string_view fmt, va_list args, size_t& size) {
 #pragma warning(suppress:28719)    // 28719
         size = vsnprintf(nullptr, 0, fmt.data(), args);
 
@@ -17,8 +16,7 @@ namespace {
         return message;
     }
 
-    wchar_t* _formatStr(const std::wstring_view fmt, va_list args) {
-        size_t size;
+    wchar_t* _formatStr(const std::wstring_view fmt, va_list args, size_t& size) {
 #pragma warning(suppress:4996)    // 28719
         size = _vsnwprintf(nullptr, 0, fmt.data(), args);
 
@@ -30,7 +28,8 @@ namespace {
     }
 
 	void _message(const std::string_view title, unsigned int flags, const std::string_view fmt, va_list args) {
-		const char* message = _formatStr(fmt, args);
+        size_t size;
+		const char* message = _formatStr(fmt, args, size);
 		if (IsDebuggerPresent()) {
 			OutputDebugStringA(message);
 			OutputDebugStringA("\n");
@@ -42,22 +41,26 @@ namespace {
 }
 
 namespace TT {
-	// Caller owns the return value
-    char* formatStr(const std::string_view fmt, ...) {
+    std::string formatStr(const std::string_view fmt, ...) {
+        size_t size;
         va_list args;
         __crt_va_start(args, fmt);
-        char* message = _formatStr(fmt, args);
+        char* message = _formatStr(fmt, args, size);
         __crt_va_end(args);
-        return message;
+        std::string result(message, size);
+        delete[] message;
+        return result;
     }
 
-    // Caller owns the return value
-    wchar_t* formatStr(const std::wstring_view fmt, ...) {
+    std::wstring formatStr(const std::wstring_view fmt, ...) {
+        size_t size;
         va_list args;
         __crt_va_start(args, fmt);
-        wchar_t* message = _formatStr(fmt, args);
+        wchar_t* message = _formatStr(fmt, args, size);
         __crt_va_end(args);
-        return message;
+        std::wstring result(message, size);
+        delete[] message;
+        return result;
     }
 
 	void info(const std::string_view fmt, ...) {
