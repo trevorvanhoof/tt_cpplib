@@ -1,8 +1,6 @@
 /*
 TODO: Window bugs and missing features: 
-- can't press ALT+Enter to toggle minimize / maximize, 
 - can't see the cursor change when trying to resize,
-- can't toggle fullscreen mode with F11
 
 A Window class that receives messages in a slightly higher level format.
 Subclass and implement the events. Note the CreateGLContext() utility function.
@@ -196,6 +194,24 @@ namespace TT {
         CloseEvent() { type = Event::Type::Close; }
     };
 
+    enum class WindowFlags : unsigned char {
+        // If windowed is not allowed, window will go to fullscreen automatically on startup (or show if startup does not work).
+        AllowWindowed      = 0b0000'0001,
+        AllowFullscreen    = 0b0000'0010,
+        // Only one of these is used at a time, they mean the same if the window does not support fullscreen and windowed modes at the same time.
+        AltEnterMaximize   = 0b0000'0100,
+        AltEnterFullscreen = 0b0000'1000,
+        // Only one of these is used at a time
+        F11Maximize        = 0b0001'0000,
+        F11Fullscreen      = 0b0010'0000,
+        // If both of these are true, and we can go to windowed mode, esc first enters windowed mode and then closes the window.
+        EscLeaveFullscreen = 0b0100'0000,
+        EscClose           = 0b1000'0000,
+        // Defaults
+        Default = AllowWindowed | AllowFullscreen | AltEnterMaximize | F11Fullscreen | EscLeaveFullscreen,
+        Demo = AllowFullscreen | EscClose,
+    };
+
 	class Window {
 		// the window callback can't be a bound function, so we have to track it ourselves
 		static std::unordered_map<HWND__*, Window*> dankjewelwindows;
@@ -206,11 +222,26 @@ namespace TT {
 
 		void handleEvent(const Event& event);
 
+        // Fullscreen helpers
+        struct WindowState {
+            bool isFullscreen;
+            bool isMaximized;
+            int style;
+            int exStyle;
+            int rect[4];
+        };
+
+        WindowState state;
+
+        static void toggleFullscreen(HWND__* hwnd, WindowState& ioState);
+        static void toggleMaximize(HWND__* hwnd, WindowState& ioState);
+
 	protected:
 		HWND__* window;
 
 		bool enableMouseTracking = false;
 		unsigned int mouseButtonStates = 0;
+        WindowFlags flags = WindowFlags::Default;
 
 		virtual void onPaintEvent(const PaintEvent& event) {}
 		virtual void onResizeEvent(const ResizeEvent& event) {}
@@ -223,13 +254,16 @@ namespace TT {
 	public:
 		static bool hasVisibleWindows();
 
-		Window(const char_t* windowTitle = TT_LIT("Window"), HINSTANCE__* hInstance = 0);
+		Window(const char_t* windowTitle = TT_LIT("Window"), HINSTANCE__* hInstance = 0, WindowFlags flags = WindowFlags::Default);
 		~Window();
 
 		void repaint() const;
 		void show();
 		int width() const;
 		int height() const;
+        void close() const;
+        void toggleFullscreen();
+        void toggleMaximize();
 
 		std::function<void(Event&)> eventHandler; // Uses Window::handlEvent() by default.
 

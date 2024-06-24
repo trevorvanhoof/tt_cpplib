@@ -4,7 +4,7 @@
 
 
 namespace TT {
-	Window::Window(const char_t* windowTitle, HINSTANCE hInstance) {
+	Window::Window(const char_t* windowTitle, HINSTANCE hInstance, WindowFlags flags) : flags(flags) {
 		// Create our own window class
 		static bool haveWindowClass = false;
 		if (!haveWindowClass) {
@@ -20,6 +20,10 @@ namespace TT {
 		window = CreateWindowEx(0, TT_LIT("TTWindowClass"), windowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, hInstance, 0);
 		assert(window);
 		dankjewelwindows[window] = this;
+
+        // If windowed is not allowed, window will go to fullscreen automatically on startup.
+        if( (int)flags & (int)WindowFlags::AllowFullscreen && !((int)flags & (int)WindowFlags::AllowWindowed) )
+            toggleFullscreen();
 
 		eventHandler = std::bind(&Window::handleEvent, this, std::placeholders::_1);
 	}
@@ -263,7 +267,45 @@ namespace TT {
             if(lParam & (1 << 29)) { LRESULT result = DefWindowProcA(hwnd, msg, wParam, lParam); if(result) return result; }
 		case WM_KEYDOWN: {
             auto event = createKeyEvent(wParam, lParam, true);
-			it->second->eventHandler(event);
+
+            WindowFlags flags = it->second->flags;
+
+            bool allowWindowed = (int)flags & (int)WindowFlags::AllowWindowed;
+            bool allowFullscreen = (int)flags & (int)WindowFlags::AllowFullscreen;
+            bool altEnterFullscreen = (int)flags & (int)WindowFlags::AltEnterFullscreen;
+            bool f11Fullscreen = (int)flags & (int)WindowFlags::F11Fullscreen;
+
+            // Alt+Enter
+            if((((int)flags & (int)WindowFlags::AltEnterMaximize) || altEnterFullscreen) &&
+                event.key == VK_RETURN && ((int)event.modifiers & (int)TT::Modifiers::Alt)) {
+                // We can toggle fullscreen and this shortcut should toggle.
+                if (allowWindowed && allowFullscreen && altEnterFullscreen)
+                    it->second->toggleFullscreen();
+                // We allow winowed mode so we toggle maximize, will be a noop if we are in fullscreen mode.
+                else if (allowWindowed)
+                    it->second->toggleMaximize();
+            }
+
+            // F11
+            else if((((int)flags & (int)WindowFlags::F11Maximize) || f11Fullscreen) && event.key == VK_F11) {
+                // We can toggle fullscreen and this shortcut should toggle.
+                if (allowWindowed && allowFullscreen && f11Fullscreen)
+                    it->second->toggleFullscreen();
+                // We allow winowed mode so we toggle maximize, will be a noop if we are in fullscreen mode.
+                else if (allowWindowed)
+                    it->second->toggleMaximize();
+            }
+
+            // Esc
+            else if(event.key == VK_ESCAPE) {
+                if ((int)flags & (int)WindowFlags::EscLeaveFullscreen && allowWindowed && it->second->state.isFullscreen)
+                    it->second->toggleFullscreen();
+                else if ((int)flags & (int)WindowFlags::EscClose)
+                    it->second->close();
+            } else {
+                it->second->eventHandler(event);
+            }
+
 			break;
 		}
 		case WM_SYSKEYUP:
@@ -376,4 +418,77 @@ namespace TT {
 	HWND Window::windowHandle() const {
 		return window;
 	}
+
+    void Window::toggleFullscreen(HWND hwnd, WindowState& ioState) {
+        // Based on chromium implementation, see https://stackoverflow.com/questions/2382464/win32-full-screen-and-hiding-taskbar
+        // Save current window state if not already fullscreen.
+        if (!ioState.isFullscreen) {
+            // Save current window information.  We force the window into restored mode
+            // before going fullscreen because Windows doesn't seem to hide the
+            // taskbar if the window is in the maximized state.
+            ioState.isMaximized = IsZoomed(hwnd);
+            if (ioState.isMaximized)
+                ::SendMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+            ioState.style = GetWindowLong(hwnd, GWL_STYLE);
+            ioState.exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            RECT winRect;
+            GetWindowRect(hwnd, &winRect);
+            ioState.rect[0] = winRect.left;
+            ioState.rect[1] = winRect.top;
+            ioState.rect[2] = winRect.right - winRect.left;
+            ioState.rect[3] = winRect.bottom - winRect.top;
+        }
+
+        ioState.isFullscreen = !ioState.isFullscreen;
+
+        if (ioState.isFullscreen) {
+            // Set new window style and size.
+            SetWindowLong(hwnd, GWL_STYLE, ioState.style & ~(WS_CAPTION | WS_THICKFRAME));
+            SetWindowLong(hwnd, GWL_EXSTYLE, ioState.exStyle & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+
+            // On expand, if we're given a window rect, grow to it, otherwise do not resize.
+            /*for metro*/ {
+                MONITORINFO monitor;
+                monitor.cbSize = sizeof(monitor);
+                GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST),
+                    &monitor);
+                SetWindowPos(hwnd, NULL, monitor.rcMonitor.left, monitor.rcMonitor.top,
+                    monitor.rcMonitor.right - monitor.rcMonitor.left, monitor.rcMonitor.bottom - monitor.rcMonitor.top,
+                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            }
+        } else {
+            // If SetWindowPos() doesn't redraw, the taskbar won't be repainted.
+            SetWindowLong(hwnd, GWL_STYLE, ioState.style);
+            SetWindowLong(hwnd, GWL_EXSTYLE, ioState.exStyle);
+            /*for metro*/ {
+                // On restore, resize to the previous saved rect size.
+                SetWindowPos(hwnd, NULL, ioState.rect[0], ioState.rect[1], ioState.rect[2], ioState.rect[3],
+                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            }
+            if (ioState.isMaximized)
+                SendMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+        }
+    }
+
+    void Window::toggleMaximize(HWND hwnd, WindowState& ioState) {
+        // Do nothing if fullscreen.
+        if (ioState.isFullscreen)
+            return;
+        if (IsZoomed(hwnd))
+            SendMessage(hwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+        else
+            SendMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+    }
+
+    void Window::close() const {
+        PostMessage(window, WM_CLOSE, 0, 0);
+    }
+
+    void Window::toggleFullscreen() {
+        toggleFullscreen(window, state);
+    }
+
+    void Window::toggleMaximize() {
+        toggleMaximize(window, state);
+    }
 }
