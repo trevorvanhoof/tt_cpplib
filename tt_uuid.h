@@ -3,6 +3,8 @@
 #include <string>
 #include "tt_math.h"
 
+#pragma comment(lib, "Rpcrt4.lib")
+
 namespace TT {
     class UUID {
     public:
