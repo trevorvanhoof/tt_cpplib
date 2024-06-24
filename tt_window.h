@@ -1,6 +1,5 @@
 /*
-TODO: Window bugs and missing features: 
-- can't see the cursor change when trying to resize,
+TODO: The cursor does not always revert to the right type when the mouse leaves the window.
 
 A Window class that receives messages in a slightly higher level format.
 Subclass and implement the events. Note the CreateGLContext() utility function.

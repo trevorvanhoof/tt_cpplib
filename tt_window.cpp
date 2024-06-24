@@ -14,6 +14,7 @@ namespace TT {
 			wc.lpfnWndProc = Window::windowProc;
 			wc.lpszClassName = TT_LIT("TTWindowClass");
 			wc.style = CS_DBLCLKS;
+            wc.hCursor = LoadCursor(nullptr, IDC_HAND);
 			RegisterClass(&wc);
 		}
 
@@ -222,12 +223,6 @@ namespace TT {
 
 		case WM_DESTROY:
 			PostQuitMessage(0);
-			break;
-
-		case WM_SETCURSOR:
-			// For some reason the arrow always also shows the waiting icon
-			// but other cursors don't.
-			SetCursor(LoadCursor(0, IDC_HAND));
 			break;
 
 		case WM_LBUTTONDOWN:
